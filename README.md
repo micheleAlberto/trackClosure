@@ -41,6 +41,7 @@ interactively debug robust closure of partitions of benchmark file
 stato: in lavorazione
 implementa funzioni per realizzare una chiusura robusta controllando ad ogni inserimento di punto
 #### Components: 
+*   interactiveClosure.py
 *   interactiveMerge.py 
 *   mergeException.py
 *   printOperation.py
