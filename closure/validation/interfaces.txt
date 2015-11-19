@@ -1,0 +1,176 @@
+src from  mergeReport.py  :
+	from deprecator import deprecated
+	def _internal_distance(x):
+	def _relative_distance(x,c):
+	def _view_quality(P,compact,I):
+	class pointQuality(object):
+	    @deprecated
+	    def __init__(self,P,compactP):
+	class validationReportWithLogging(object):
+	    @deprecated
+	    def __init__(self,P,compactP,Q,compactQ):
+	    @deprecated
+	    def finalize(self,R):
+	    def __str__(self):
+	def merge_synthesis(P,Q,PE,QE):
+	def split_synthesis(P,Q,commons):
+	class validationReport(object):
+	    def __init__(self):
+	    def setMerge(self,P,Q,PE,QE):
+	    def setSplit(self,P,Q,commons)
+	    def __str__(self):
+
+src from  classifiers.py  :
+	from deprecator import deprecated
+	import numpy as np
+	import matplotlib.pyplot as plt
+	from random import random
+	from collections import Counter
+	import sys
+	import seaborn as sns
+	import matplotlib.pyplot as plt
+	from syntheticGenerator import Generator
+	from sklearn import linear_model
+	from sklearn import svm
+	from sklearn import tree
+	def trainClassifier(method, X, Y, Xv, Yv):
+	def crossClassifierPerformance(models,X,Y):
+	def clfCouple(YY,i,j):
+	def quadratic(xx):
+	def val(o,p):
+	def trainExcludeClassifiers(trainingSamples=10000,validationSamples=4000,literals='abc',pointLenght=5):
+	def compareExcludeClassifiers(samples=10000,trainingSamples=10000,validationSamples=4000,literals='abc',pointLenght=5):
+	def trainMergeClassifiers(ExcludeClassifier,trainingSamples=10000,validationSamples=4000,literals='abc',pointLenght=5):
+	from sklearn.externals import joblib 
+	def getExcludeClassifier():
+	def saveExcludeClassifier(clf):
+	def getMergeClassifier():
+	def saveMergeClassifier(clf):
+	def TrainAndSave_ExcludeClassifier(argv):
+	def TrainAndSave_MergeClassifier(argv):
+	def main(argv):
+
+src from  score.py  :
+	from deprecator import deprecated
+	def score(P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+	class ScoreBoard:
+	    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+	    def worstP(self):
+	    def worstQ(self):
+	    def accountability_P(self,i):
+	    def accountability_Q(self,i):
+	    def gain(self):
+	class iterativeScoreBoard:
+	    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+	    def update(self):
+	    def mergeInputModel(self):
+	    def excludeInputModelP(self,i):
+	    def excludeInputModelQ(self,i):
+	    def excludeInputModels(self):
+	    @deprecated
+	    def tick_old(self,acceptance=0.2):
+	    def clearCommons(self,updateTable=False):
+	    def tick(self,classifier):
+
+src from  compactRepresentation.py  :
+	from deprecator import deprecated
+	def compactPoint(P):
+	def centroid_direct(x):
+	from random import choice
+	def centroid_iterative(x,tresh=0.2):
+
+src from  syntheticGenerator.py  :
+	from deprecator import deprecated
+	from itertools import product,combinations
+	from random import choice
+	from oracle import Oracle
+	from score import iterativeScoreBoard
+	def tfPartitions(V,Pval,Qval,case):
+	def interpretation(v,Pval,Qval,case):
+	class Schema:
+	    def __init__(self,P,Q):
+	    def observations(self):
+	    def expandX(self):
+	    @deprecated
+	    def clearCommons(self,I,inlier_I,P_inliers,P_outliers,Q_inliers,Q_outliers):
+	    @deprecated
+	    def splitCommons(self,I,inlier_I,P_inliers,P_outliers,Q_inliers,Q_outliers):
+	    def mergeView(self,v,P_exclude,Q_exclude):
+	    def scoring2exclude(self,realization):
+	    def scoring2merge(self,realization,ExcludeClassifier):
+	    @deprecated  
+	    def scoring2merge_old(self,realization,blameRatio=0.2):
+	    @deprecated
+	    def scoring(self,realization,blameRatio=0.2):
+	    def report(self):
+	class Generator():
+	    def __init__(self):
+	    def genPoints(self,logical_points,p_lenght):
+	    @deprecated
+	    def genMergeCase_old(self,filterFunc=None,blame=0.2):
+	    def genMergeCase(self,ExcludeClassifier,filterFunc=None):
+	    @deprecated
+	    def genMergeCases_old(self,n,filterFunc=None):
+	    def genMergeCases(self,n,ExcludeClassifier,filterFunc=None):
+	    def genExcludeCaseGroup(self,filterFunc=None):
+	    def genExcludeCases(self,n,filterFunc=None):
+
+src from  deprecator.py  :
+	import warnings
+	import functools
+	def deprecated(func):
+	    @functools.wraps(func)
+	    def new_func(*args, **kwargs):
+	from deprecator import deprecated
+	@deprecated
+	def my_func():
+	@other_decorators_must_be_upper
+	@deprecated
+	def my_func():
+
+src from  transclosureMergeValidation.py  :
+	from itertools import groupby, chain, ifilter, combinations, product
+	import numpy as np
+	import cv2
+	import collections
+	from collections import Counter
+	from random import choice
+	import sys
+	from compactRepresentation import compactPoint
+	from mergeReport import validationReport
+	from score import iterativeScoreBoard
+	from classifiers import getExcludeClassifier,getMergeClassifier
+	from deprecator import deprecated
+	@deprecated
+	def possible_reprojections(P_list, Q_list, PQ_EpG):
+	def observations(P_list, Q_list, PQ_EpG):
+	def cross_EpG(Global_EpG, P_list, Q_list):
+	@deprecated
+	def pointTransfer(Fik, Fjk, mi, mj):
+	def pointTransferVectorized(P,Q,rEpG,maxLevel=8,alfa=0.8,IJK=None,IKL=None,I=None):
+	@deprecated
+	def clearCommons(I,inlier_I,vr,P_inliers,P_outliers,Q_inliers,Q_outliers):
+	@deprecated
+	def validation_old(Point_P, Point_Q, gEpG,radius,a=0.7):
+	def validation(Point_P, Point_Q, gEpG,radius,a=0.7):
+
+src from  oracle.py  :
+	from collections import Counter
+	class Oracle:
+	    @staticmethod
+	    def dominant(x):
+	    @staticmethod
+	    def dominants(x):
+	    @staticmethod
+	    def mergeResult(P,Q):
+	    @staticmethod
+	    def splitResult(P,other):
+	    @staticmethod
+	    def excludeOnMerge(P):
+	    @staticmethod
+	    def mergeDecision(P,Q):
+	    @staticmethod
+	    def mergeDecision_old(P,Q):
+	    @staticmethod
+	    def value(p,q):
+

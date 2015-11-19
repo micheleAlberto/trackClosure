@@ -1,0 +1,75 @@
+src from  point.py  :
+	from itertools import groupby,chain,ifilter
+	import numpy as np
+	import cv2
+	from view import view
+	class point :
+	    def __init__(self,point_id,views,header=None):
+	    def __str__(self):
+	    @staticmethod
+	    def have_intersection(p1,p2):
+	    def getKeypointsIds(self,image_id):
+	    def allViews(self):
+	    def mergeWith(self,otherP,excluding=None): #implementa una riscrittura di otherP come self
+	    def add_view(self,v):
+
+src from  transclosure.py  :
+	from itertools import groupby,chain,ifilter
+	import numpy as np
+	from transclosureMergeValidation import validation
+	from point import point
+	from view import view
+	import cv2
+	class transitiveclosure(object):
+	    def __init__(self):
+	    def allViews(self):
+	    def hasView(self,im_id,kp_id):
+	    def setView(self,im_id,kp_id,p_id):
+	    def viewQuery(self,im_id,kp_id):
+	    def viewPointViewQuery(self,im_id,kp_id):
+	    def pointViewQuery(self,Point_id):
+	    def assert_every_point_indexed_exist2(self):
+	    def assert_every_point_indexed_exist(self):
+	        #from view to points assert inclusion in the point
+	        #from points to view assert existence and reference to the point
+	    def viewGroupQuery(self,views):
+	    def __str__(self):
+	    def _insertPoint(self,point):
+	    def removePoint(self,point_id):
+	    def removeLockedPoints(self,point_id):
+	    def add_edge(self,v1,v2):
+	    def newPoint(self,views):
+	    def closure(self,trc2,use_view_index=False):
+	                trc1.removePoint(p1Id)#remove merged points from trc1
+	    def robust_closure(self,trc2,gEpG,radius=4.,ValidationRegister=None,use_view_index=False):
+	                trc1.removePoint(p1Id)#remove merged points from trc1
+	    @staticmethod
+	    def fromMatchList(matches,im_i,im_j):
+	    def add_view_definition(self,im_i,kp,ft):
+	    def query_image_list(self,image_ids,VI,VIH):
+	    def query_image_pair(self,image_id_i,image_id_j,VI,VIH):
+	    def F_speculation(self,image_id_i,image_id_j,ransac_population=0):
+	    def prune(self,minimum_visibility):
+	    def prune_in_place(self,minimum_visibility):
+	    def viewIndex(self):
+	    def viewIndexHeader(self,VI,size=256):
+	def robust_closure(trc1,trc2,gEpG,radius=4.,ValidationRegister=None,use_view_index=False):
+	def merge(vr,p,q,radius=4.):
+	def split(vr,p,q):
+	def synthPoints(leader,followers,gEpG,radius):
+
+src from  __init__.py  :
+
+src from  view.py  :
+	from itertools import groupby,chain,ifilter
+	import numpy as np
+	class view (object):
+	    def __init__(self,id_image,id_keypoint,u,v):
+	    def pt(self):
+	    def key(self):
+	    def __str__(self):
+	    def __hash__(self):
+	    def __eq__(self, other):
+	    def header(self):
+	    def feature(self,f=None):
+
