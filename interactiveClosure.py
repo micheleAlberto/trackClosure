@@ -120,4 +120,99 @@ def per_track_reduction(part_x,track_y,oracle,add_point_functor):
         """
     return foo
 
-    
+def epipolarFilter(gEpG,tollerance):
+    def foo(va,vb):
+        IJ=(va.id_image,vb.id_image)
+        if( IJ in gEpG):
+            Ferr=np.dot(vb.hpt() ,np.dot( gEpG[IJ] , va.hpt().T ))
+            return np.absolute(Ferr)<tollerance
+        else:
+            return False
+    return foo
+from random import random
+from itertools import combinations, permutations
+def edge_sampling(cc,gEpG,p):
+    return (pair_of_views
+    for pair_of_views in all_edges(cc,gEpG)
+    if random()<p)
+
+def all_edges(cc,gEpG):
+    geometric_filter=epipolarFilter(gEpG,4.)
+    return ( 
+        (va,vb)
+        for va,vb in combinations(cc.allViews,2)
+        if geometric_filter(va,vb)
+        )
+from closure.transclosure import transitiveclosure as Partition
+from closure.transclosure import save_tracks
+from closure.point import point as Track
+from closure.point import view as View
+
+def partitions_from_edges(list_of_pairs):
+    pv=[]
+    for (va,vb) in list_of_pairs:
+        part=Partition()
+        part.add_point(Track(-1,[v0,v1]))
+        pv.append(part)
+    return pv
+        
+
+from copy import deepcopy
+from random import shuffle
+
+
+#commands to be used inside BenchmarkApp.py
+def live_be_cmd(
+        benchmark_file,
+        epipolar_geometry_file,
+        image_dir,
+        omvg_dir):
+    omvg=OpenMVG()
+    omvg.set_image_dir(image_dir)
+    omvg.set_feature_dir(omvg_dir)
+    image_id2name,name2image_id = omvg.loadImageMap()
+    gEpG=EpipolarGeometry.load(epipolar_geometry_file)
+    print "[live] benchmark file: ",benchmark_file
+    bm=load_benchmark(benchmark_file)
+    print "[live] ",bm.label , ' with {} connected components '.format(len(bm.cc.points))
+    for cc_id in bm.cc.points:
+        print 'connected component #',cc_id
+        cc=bm.cc.points[cc_id]
+        cc_edges=all_edges(cc,gEpG)
+        base_partitions=partitions_from_edges(cc_edges)
+        sampled_outcomes=[]
+        #   ALL PERMUTATIONS
+        for shuffled_partition in permutations(base_partitions):
+        #   1 RANDOM PERMUTATION PER KEYPOINT
+        #for shuffled_partition in (shuffle(base_partitions) for _i in cc.allViews() ):
+        #   10 RANDOM PERMUTATIONS
+        #for shuffled_partition in (shuffle(base_partitions) for _i in range(10) ):
+        #   1 RANDOM PERMUTATION
+        #for shuffled_partition in (shuffle(base_partitions), ):
+            partitions=deepcopy(shuffled_partition)
+            while len(partitions)>1:
+                partitions=[
+                    (closure(partitions[i],partitions[i+1])
+                        if i+1<len(partitions)
+                        else partitions[i]
+                    )
+                    for i in range(len(partitions))
+                    if  i % 2 ==0]
+            sampled_outcomes.append(partitions[0])
+        #now it' s time to judge the sampled outcomes
+        sampled_outcomes
+    return 
+                
+
+#TODO:
+"""
+costruire closure
+    closure(partitions[i],partitions[i+1])->part
+costruire la valutazione finale delle operazioni sul cc
+    final(partitions[0]) -> bho
+definire se e come permutare i lati dei componenti connessi
+"""
+        
+        
+        
+        

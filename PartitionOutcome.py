@@ -1,6 +1,24 @@
 from collections import Counter
 from partitionTransfer import dominant
-class MergeOutcome(Exception):
+
+class ConnectedComponentTester():
+    def __init__(self, cc,gEpG,oracle):
+        self.cc=cc
+        ccO=Counter(soft_fetch(oracle,cc))
+        
+        self.gEpG=gEpG
+        self.oracle=oracle
+    def testPartition(self,part):
+        oracles_by_track=( 
+            (track.id,soft_fetch(oracle,track)) 
+            for track in part.points.values() )
+        correct_oracles_by_track=(
+            (t_id,[_or for _or in or_list if dominant(or_list)==_or ])
+            for t_id,or_list in oracles_by_track)
+        correct_oracles=Counter(sum(map(list,correct_oracles_by_track),[]))
+        correct_keypoints=sum(correct_oracles.values())
+        #correttezza
+        #completezza
     def __init__(self, track_x,track_y,tracks_Z,gEpG,oracle):
         self.track_x=track_x
         self.track_y=track_y
