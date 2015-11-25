@@ -37,6 +37,11 @@ class MergeOutcome(Exception):
                 should be in the results
                 have the same oracle of some result
             """
+        kps2views=lambda some_keypoint_key_sequence :{
+            view_key:v 
+            for v in track_x.allViews()+track_y.allViews() 
+            if view_key==v.key() 
+            for view_key in some_keypoint_key_sequence}
         operand_kp=set([v.key() for v in track_x.allViews()+track_y.allViews()])
         result_kp=reduce(
                 lambda a,b:a+b,
@@ -44,12 +49,8 @@ class MergeOutcome(Exception):
                 [])
         result_kp=set(result_kp)
         missing = operand_kp.difference(result_kp)
-        missing_oracles=[]
-        for kp in missing:
-            if kp[0] in oracle.views:
-                if kp[1] in oracle.views[kp[0]]:
-                    missing_oracles.append(
-                        oracle.views[kp[0]])
+        missing_views=kps2views(missing)
+        missing_oracles=soft_fetch_views(oracle,missing_views.values())
         dominant_oracles_of_results=set([dominant(zO) for zO in ZO])          
         self.spilled_oracles=Counter([o 
                 for o in missing_oracles
@@ -105,26 +106,16 @@ class MergeOutcome(Exception):
             return True
     def __str__(self):
         s=  print_merge_operation(track_x,track_y,result,gEpG,oracle)+'\n'
+        s+= '\tCorrectness:\n'
         s+= 'correct operands: {}\n'.format(self.has_correct_operands())
         s+= 'correct_results: {}\n'.format( self.has_correct_results() )
         s+= 'recover : {}\n'.format(        self.is_recover())
         s+= 'correct operation: {}\n'.format(self.is_correct())
         s+= 'mutually_correct_operands: {}\n'.format(self.has_mutually_correct_operands())
         s+= 'roughly correct operation: {}\n'.format(self.is_roughly_correct())
-
-                print 'recover: ',recover
-                print 'known_recover: 'known_recover
-                print 'oracles of X:',xO
-                print 'oracles of Y:',yO
-                print 'dominant oracles in results:',dominant_oracles_of_results
-                print ('spilled oracles:',
-                    ', '.join(['{}:{}'.format(oi[0],oi[1]) 
-                                for oi in spilled_oracles.iteritems()]))
-                print ('dominant of resu:',
-                    ', '.join(['{}:{}'.format(oi[0],oi[1]) 
-                                for oi in spilled_oracles.iteritems()]))
-        return "some sort of undefined merge error"
-
-
-    
-    
+        s+= '\tCompleteness:\n'
+        s+= 'missing keypoints: {}\n'.format(len(self.missing))
+        s+= 'spilled keypoints: {}\n'.format(self.spilled)
+        for spilled_oracle in self.spilled_oracles:
+            s+= 'spilled {} from oracle {}\n'.format(self.spilled_oracles[spilled_oracle],spilled_oracle)
+        return s

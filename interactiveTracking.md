@@ -5,7 +5,26 @@ interactively debug robust closure of partitions of benchmark file
 
 implementa funzioni per realizzare una chiusura robusta controllando ad ogni inserimento di punto
 ##interactiveClosure.py
-
+live benchmark_file epipolar_geometry_file image_directory omvg_dir
+    
+*   run an oracle based tracking benchmark
+*   For every connected components of the benchmark many edge permutations are 
+    simulated.
+*   An edge permutation is a permutation of the list of edges that are 
+    observable for the connected components.
+*   An edge is a match between 2 keypoints of a single connected component, 
+    validated by the provided epipolar geometries.
+*   For each sampled edge permutations the merging process is performed and
+    validated against the oracle
+*   For each connected component a performance profile is returned as a
+    dictionary value mapped by the connected component identifier
+*   a performance profile is a pair of floats : correctness and completeness
+*   correctness is the probability that tracks produced by the merge process are
+    correct 
+*   a track is correct if all the keypoint of the track belong to the same oracle
+*   completeness is the average number of keypoints correctly labeled in the cc.
+*   a keypoint is correctly labeled if its oracle is the same as the (relative)
+    majority of the keypoints of the track  
 ### make_merge_with_validation(radius,gEpG)
 
 provide an implementation of a merge function usign multiview validation
@@ -44,7 +63,9 @@ examples:
 *   make_synthPoints(hard_merge)
 *   make_synthPoints(merge_with_validation)
 ##interactiveMerge.py
- 
+functions that provide functions that implement the merging of two tracks
+
+merge: (trackA,trackB)->result_tracks
 ##MergeOutcome.py
 Implement a class to model failures of a generic merge operation.
 ```
@@ -86,7 +107,10 @@ to generate such function use:
 ```
 print_foo = make_print_operation(epipolar_geometries,oracle_partition)
 ```
-
+Equivalently:
+```
+print_merge_operation(track_x,track_y,result,gEpG,oracle)-> str
+```
 ##partitionTransfer.py : partition mapping utilities
 
 *   fetch(partition,track) -> track_ids

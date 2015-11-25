@@ -160,13 +160,35 @@ def partitions_from_edges(list_of_pairs):
 from copy import deepcopy
 from random import shuffle
 
-
+from PartitionOutcome import ConnectedComponentTester
 #commands to be used inside BenchmarkApp.py
 def live_be_cmd(
         benchmark_file,
         epipolar_geometry_file,
         image_dir,
         omvg_dir):
+    """
+live benchmark_file epipolar_geometry_file image_directory omvg_dir
+    
+*   run an oracle based tracking benchmark
+*   For every connected components of the benchmark many edge permutations are 
+    simulated.
+*   An edge permutation is a permutation of the list of edges that are 
+    observable for the connected components.
+*   An edge is a match between 2 keypoints of a single connected component, 
+    validated by the provided epipolar geometries.
+*   For each sampled edge permutations the merging process is performed and
+    validated against the oracle
+*   For each connected component a performance profile is returned as a
+    dictionary value mapped by the connected component identifier
+*   a performance profile is a pair of floats : correctness and completeness
+*   correctness is the probability that tracks produced by the merge process are
+    correct 
+*   a track is correct if all the keypoint of the track belong to the same oracle
+*   completeness is the average number of keypoints correctly labeled in the cc.
+*   a keypoint is correctly labeled if its oracle is the same as the (relative)
+    majority of the keypoints of the track  
+    """
     omvg=OpenMVG()
     omvg.set_image_dir(image_dir)
     omvg.set_feature_dir(omvg_dir)
@@ -175,6 +197,8 @@ def live_be_cmd(
     print "[live] benchmark file: ",benchmark_file
     bm=load_benchmark(benchmark_file)
     print "[live] ",bm.label , ' with {} connected components '.format(len(bm.cc.points))
+    partitionTester=ConnectedComponentTester(bm.cc,gEpG,bm.oracle)
+    cc_performance={}
     for cc_id in bm.cc.points:
         print 'connected component #',cc_id
         cc=bm.cc.points[cc_id]
@@ -200,8 +224,15 @@ def live_be_cmd(
                     if  i % 2 ==0]
             sampled_outcomes.append(partitions[0])
         #now it' s time to judge the sampled outcomes
-        sampled_outcomes
-    return 
+        test_of_sample_outcomes=[partitionTester.test(sample_partition) for sample_partition in sampled_outcomes]
+        average_number_of_correct_keypoints=sum( (ts[1] for ts in test_of_sample_outcomes),0.)/len(test_of_sample_outcomes)
+        average_track_correctness=sum((ts[0] for ts in test_of_sample_outcomes),0.)/len(test_of_sample_outcomes)
+        cc_performance[cc_id]=(average_track_correctness,average_number_of_correct_keypoints)
+        print "{}:\t{}\t{}\t".format(cc_id,cc_performance[cc_id][0],cc_performance[cc_id][1])
+    print "\tCC\tcorrectness\tcompleteness"
+    for cc_id in cc_performance:
+        print "{}:\t{}\t{}\t".format(cc_id,cc_performance[cc_id][0],cc_performance[cc_id][1])
+    return cc_performance
                 
 
 #TODO:
@@ -212,7 +243,4 @@ costruire la valutazione finale delle operazioni sul cc
     final(partitions[0]) -> bho
 definire se e come permutare i lati dei componenti connessi
 """
-        
-        
-        
-        
+
