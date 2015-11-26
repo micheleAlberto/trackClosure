@@ -119,3 +119,35 @@ class MergeOutcome(Exception):
         for spilled_oracle in self.spilled_oracles:
             s+= 'spilled {} from oracle {}\n'.format(self.spilled_oracles[spilled_oracle],spilled_oracle)
         return s
+
+
+"""
+#Notes on test semantics :
+
+##Merge Correctness:
+Means not to introduce errors in the computation.
+a merge operation is correct if:
+*   there are no errors in the operands and 
+*   there are errors in the results
+
+##Merge Recover:
+Means errors in the input are prevented from spreading in the output.
+we are recovering errors when:
+*   there are errors in the operands and
+*   there are no errors in the results
+
+###Partial merge recover:
+Means that there are less errors in the results than in the full closure results
+that is:
+*   there are errors in the full closure results that are not in the robust 
+    results  
+    
+##Merge Completeness:
+Means not to discard usefull data in the computation.
+we are discarding usefull data when there are keypoints :
+*   that are in the operands
+*   that are not in the results
+*   that are in same the oracle of a result 
+(that is: keypoints that should be in the results but are not)
+
+"""
