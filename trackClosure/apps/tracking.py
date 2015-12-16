@@ -5,14 +5,14 @@ from closure.transclosure import transitiveclosure as Partition
 from closure.transclosure import save_tracks
 from closure.point import point as Track
 from closure.point import view as View
-from epipolarGeometry import EpipolarGeometry
+from geometry.epipolarGeometry import EpipolarGeometry
 from fromOpenMVG.wrapper import OpenMVG
 
 def n_connected_components(part,n):
     return [p.id for p in part.points.values() if (len(p.views)==n)]
- 
+
 def max_connected_components(part):
-    return max(len(p.views) for p in part.points.values() )          
+    return max(len(p.views) for p in part.points.values() )
 omvg=OpenMVG()
 omvg.set_image_dir(sys.argv[1])
 omvg.set_feature_dir("./featDir")
@@ -54,12 +54,8 @@ for i in range(max_connection-10,max_connection):
 22 : 153934 153949 153963 154034
 
 python BenchmarkApp.py --new benchmark.be soft_benchmark
-python BenchmarkApp.py --addcc benchmark.be matches.epg cc.pk blablaim/ featDir/  153934 153949 
+python BenchmarkApp.py --addcc benchmark.be matches.epg cc.pk blablaim/ featDir/  153934 153949
 153963 154034 148898 150851 153047 153226 153777 153925 153932 153990 153996 154009
 
 """
 embed()
-    
-    
-
-

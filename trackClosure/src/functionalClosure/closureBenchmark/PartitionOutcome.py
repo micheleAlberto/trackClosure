@@ -1,6 +1,5 @@
 from collections import Counter
-from partitionTransfer import dominant
-from printOperation import print_merge_operation
+from ..mergeBenchmark.partitionTransfer import dominant, soft_fetch
 class ConnectedComponentTester():
     def __init__(self,cc,gEpG,oracle):
         self.cc=cc
@@ -14,7 +13,7 @@ class ConnectedComponentTester():
             compl is the number of keypoints that are correctly labeled
         """
         oracles_by_track={
-            track.id:soft_fetch(oracle,track))
+            track.id:soft_fetch(oracle,track)
             for track in part.points.values() }
         dominant_oracle_by_track={
             t_id:dominant(oracles_by_track[t_id]) 

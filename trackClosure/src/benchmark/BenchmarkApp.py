@@ -3,13 +3,13 @@
 import numpy as np
 import cv2
 import sys
-from closure.transclosure import load_tracks 
+from closure.transclosure import load_tracks
 from closure.point import point
-from benchmark import Benchmark
-from benchmark import save_benchmark
-from benchmark import load_benchmark
-from OracleGui import oracle_gui
-from epipolarGeometry import EpipolarGeometry
+from benchmark.benchmark import Benchmark
+from benchmark.benchmark import save_benchmark
+from benchmark.benchmark import load_benchmark
+from benchmark.OracleGui import oracle_gui
+from geometry.epipolarGeometry import EpipolarGeometry
 from fromOpenMVG.wrapper import OpenMVG
 
 def add_cc_cmd(
@@ -109,7 +109,7 @@ def add_cc_t_cmd(
 def new_cmd(benchmark_file,benchmark_label):
     bm=Benchmark(benchmark_label)
     save_benchmark(bm, benchmark_file)
-   
+
 def print_cmd(benchmark_file):
     bm=load_benchmark(benchmark_file)
     print "benchmark file: ",benchmark_file
@@ -165,14 +165,14 @@ def main(argv):
             t_ids)
     if "--new" in argv[1]:
         benchmark_file=argv[2]
-        label=argv[3]  
+        label=argv[3]
         new_cmd(benchmark_file,label)
     if "--print" in argv[1]:
         benchmark_file=argv[2]
         print_cmd( benchmark_file)
     if "--help" in argv[1]:
         help_cmd(argv[0])
-    
+
         benchmark_file=argv[2]
         epipolar_file=argv[3]
         cc_track_file=argv[4]
@@ -215,4 +215,4 @@ def help_cmd(progname):
     for h in [new_help,print_help,addt_help,addcc_help]:
         print h
 if __name__ == "__main__":
-    main(sys.argv) 
+    main(sys.argv)

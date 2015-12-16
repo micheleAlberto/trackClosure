@@ -30,7 +30,9 @@ class OpenMVG:
             "openMVG_main_SfMInit_ImageListing",
             "openMVG_main_ComputeFeatures",
             "openMVG_main_ComputeMatches",
-            "openMVG_main_exportMatches"]
+            "openMVG_main_exportMatches",
+            "openMVG_main_IncrementalSfM",
+            "openMVG_main_GlobalSfM"]
         for b in REQUIRED_BINS:
             assert os.path.isfile(
                 os.path.join(self._bin,b) )
@@ -68,6 +70,40 @@ class OpenMVG:
             "-o", self._ftd,
             "-r", str(ratio)] )
         pMatches.wait()
+    def globalSfm(
+            input_matches=None,
+            input_matches_directory=None,
+            output_directory=None,
+            rotation_averaging_L1=False,
+            translationAveraging_L2=False,
+            refineIntrinsics=True):
+        print ("4. Global SfM optimization")
+        commands = [os.path.join(OPENMVG_SFM_BIN,"openMVG_main_GlobalSfM")]
+        if input_matches_directory:
+            commands+= ["-m",input_matches_directory]
+        else:
+            commands+= ["-m",self._ftd]
+        if output_directory:
+            commands+= ["-o",output_directory]
+        else:
+            commands+= ["-o",self._ftd]
+        if rotation_averaging_L1:
+            commands+= ["-r","1"]
+        if translationAveraging_L2:
+            commands+= ["-t","2"]
+        if camera_model in [1,2,3,"1","2","3"]:
+            """
+            1 -> pinhole
+            2 -> pinhole +1 radial distorsion
+            3 -> pinhole +3 radial distorsion
+            """
+            commands+= ["-c",str(camera_model)]
+        if not refineIntrinsics:
+            commands+= ["-f","0"]
+        print commands
+        pSfM = subprocess.Popen(commands)
+        pSfM.wait()
+        #openMVG_main_GlobalSfM -i Dataset/matches/sfm_data.json -m Dataset/matches/ -o Dataset/out_Global_Reconstruction/
     def exportKeypoints(self):
         print ("Export keypoints")
         pExportKeypoints=subprocess.Popen( [
@@ -83,6 +119,9 @@ class OpenMVG:
             (self._ftd+"/sfm_data.json"),
         #match file
             (self._ftd+"/matches.f.txt"))
+    def putMatches(partition,file_name=None):
+        _fn=file_name if file_name else (self._ftd+"/matches.f.txt")
+        putMatches.exportPartition(partition,_fn)
     def loadImageMap(self):
         sfm_file_name =self._ftd+"/sfm_data.json"
         self.image_id2name,self.name2image_id = parseImages(sfm_file_name)

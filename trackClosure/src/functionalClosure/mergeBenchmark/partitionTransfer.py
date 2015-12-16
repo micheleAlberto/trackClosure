@@ -7,7 +7,7 @@ the soft versions allow to map not only when the keypoint in present in the
 partition but also when it is close a keypoint in the partition
 """
 
-import closure.trackclosure.transitiveclosure as Partition
+from ...closure.transclosure import transitiveclosure as Partition
 
 def fetch(partition,track):
     """ 
@@ -54,12 +54,12 @@ def soft_fetch_views(partition,views):
 
 def nearest_view(v0,partition):
     nearest=min(
-        key=lambda v: np.linalg.norm(v0.pt(),v.pt()),
         (v 
             for t_id in partition.views[image_id]
             for v in partition.points[t_id].views[image_id]
         ),
-        None)
+        None,
+        key=lambda v: np.linalg.norm(v0.pt(),v.pt()))
     return nearest
 
 def partition_transfer(part_x,part_y,track_ids_y):
