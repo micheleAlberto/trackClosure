@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
-from closure.point import point
-import trackvis.trackvis as vis
+from ..closure.point import point
+from ..trackvis import trackvis as vis
 
 COLORS=vis.COLORS
 from random import choice

@@ -6,8 +6,8 @@
 #-> connected components of those central views in dumb_closure
 #-> views from the connected components
 #-> two view matches that engage the views
-from closure.transclosure import transitiveclosure as Partition
-from closure.point import point as Track
+from ..closure.transclosure import transitiveclosure as Partition
+from ..closure.point import point as Track
 import pickle
 import math
 def view_set(X):
@@ -93,7 +93,7 @@ class Benchmark:
         views={im:set([c[1] for c in self.benchmark_views if c[0]==im]) for im in image_ids}
         filtered_matches={}
         for ij in matches:
-            if ((ij[0] in views) and (ij[1] in views):
+            if ((ij[0] in views) and (ij[1] in views)):
                 filtered_matches[ij]=[]
                 for m in matches:
                     if ((m[0] in views[ij[0]]) or (m[2] in views[ij[1]])):

@@ -1,3 +1,4 @@
+
 def linear_centroid(views):
     """
     return a the view that is closer to the linear centroid of the input views

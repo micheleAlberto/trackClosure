@@ -1,18 +1,20 @@
 import sys
 import numpy as np
 from IPython import embed
-from closure.transclosure import transitiveclosure as Partition
-from closure.transclosure import save_tracks
-from closure.point import point as Track
-from closure.point import view as View
-from geometry.epipolarGeometry import EpipolarGeometry
-from fromOpenMVG.wrapper import OpenMVG
+
+from ..src.closure.transclosure import transitiveclosure as Partition
+from ..src.closure.transclosure import save_tracks
+from ..src.closure.point import point as Track
+from ..src.closure.view import view as View
+from ..src.geometry.epipolarGeometry import EpipolarGeometry
+from ..src.fromOpenMVG.wrapper import OpenMVG
 
 def n_connected_components(part,n):
     return [p.id for p in part.points.values() if (len(p.views)==n)]
 
 def max_connected_components(part):
     return max(len(p.views) for p in part.points.values() )
+
 omvg=OpenMVG()
 omvg.set_image_dir(sys.argv[1])
 omvg.set_feature_dir("./featDir")

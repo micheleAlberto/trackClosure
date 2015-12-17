@@ -8,7 +8,6 @@ from ...closure.transclosure import transitiveclosure as Partition
 from ...closure.transclosure import save_tracks
 from ...closure.point import point as Track
 from ...closure.view import view as View
-
 from ...fromOpenMVG.wrapper import OpenMVG
 from PartitionOutcome import ConnectedComponentTester
 

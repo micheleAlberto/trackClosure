@@ -3,14 +3,14 @@
 import numpy as np
 import cv2
 import sys
-from closure.transclosure import load_tracks
-from closure.point import point
+from ..closure.transclosure import load_tracks
+from ..closure.point import point
 from benchmark.benchmark import Benchmark
 from benchmark.benchmark import save_benchmark
 from benchmark.benchmark import load_benchmark
 from benchmark.OracleGui import oracle_gui
-from geometry.epipolarGeometry import EpipolarGeometry
-from fromOpenMVG.wrapper import OpenMVG
+from ..geometry.epipolarGeometry import EpipolarGeometry
+from ..fromOpenMVG.wrapper import OpenMVG
 
 def add_cc_cmd(
         benchmark_file,

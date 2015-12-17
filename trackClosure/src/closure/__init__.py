@@ -1,1 +1,1 @@
-__all__ = ["orchestra", "settings", "table"]
+print 'import '+__name__ + ' / ' +str(__package__)

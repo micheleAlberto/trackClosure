@@ -1,4 +1,4 @@
-import trackCentroid.linear_centroid as centroid
+from trackCentroid import linear_centroid as centroid
 
 def partitionToChainOfViews(partition, centroid_functor):
     chains = []
