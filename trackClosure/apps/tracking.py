@@ -62,7 +62,7 @@ def make_smart_add_point(gEpG,radius):
 
 def store_partition(cc_dir,part):
     _cc_dir='data/'+cc_dir
-    os.mkdir(cc_dir)
+    os.mkdir(_cc_dir)
     save_tracks(part,_cc_dir+'cc.pk')
     write_rf_tracks(omvg.image_id2name,part, _cc_dir+'cc.txt')
     write_rf_viewTimestamp(omvg.image_id2name, _cc_dir+'timestamps.txt')
