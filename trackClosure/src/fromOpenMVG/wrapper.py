@@ -34,8 +34,10 @@ class OpenMVG:
             "openMVG_main_IncrementalSfM",
             "openMVG_main_GlobalSfM"]
         for b in REQUIRED_BINS:
-            assert os.path.isfile(
-                os.path.join(self._bin,b) )
+            try:
+                subprocess.Popen([b])
+            except:
+                assert os.path.isfile(os.path.join(self._bin,b) )
     def set_image_dir(self,image_dir):
         self._ind=image_dir
     def set_feature_dir(self,feature_dir):
