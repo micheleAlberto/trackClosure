@@ -1,5 +1,5 @@
 # Indicate the openMVG binary directory
-OPENMVG_SFM_BIN = "/home/michele/dev/openMVG/build/software/SfM"
+OPENMVG_SFM_BIN = ""
 
 # Indicate the openMVG camera sensor width directory
 CAMERA_SENSOR_WIDTH_DIRECTORY = "/home/michele/dev/openMVG/openMVG/src/software/SfM" + "/cameraSensorWidth"
@@ -48,8 +48,8 @@ class OpenMVG:
         pIntrisics = subprocess.Popen([
             os.path.join(self._bin, "openMVG_main_SfMInit_ImageListing"),
             "-i", self._ind,
-            "-o", self._ftd,
-            "-d", camera_file_params])
+            "-o", self._ftd])
+            #"-d", camera_file_params])
         pIntrisics.wait()
         self.loadImageMap()   
         return
