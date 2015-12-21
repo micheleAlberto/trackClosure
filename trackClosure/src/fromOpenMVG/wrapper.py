@@ -53,16 +53,20 @@ class OpenMVG:
             "-o", self._ftd])
             #"-d", camera_file_params])
         pIntrisics.wait()
-        self.loadImageMap()   
+        self.loadImageMap(om)   
         return
-    def computeFeatures(self,method="SIFT"):
+    def computeFeatures(self,method="SIFT",preset=None):
         assert(method in KEYPOINT_METHODS)
         print ("2. Compute features")
-        pFeatures = subprocess.Popen( [
+        commands=[
             os.path.join(self._bin, "openMVG_main_ComputeFeatures"),
             "-i", self._ftd+"/sfm_data.json",
             "-o", self._ftd,
-            "-m", method] )
+            "-m", method]
+        if (preset ) :
+            assert(preset in ["NORMAL","HIGH","ULTRA"])
+            commands+=["-p",preset]
+        pFeatures = subprocess.Popen(commands)
         pFeatures.wait()
     def computeMatches(self,ratio=0.8,video=None):
         print ("3. Compute matches")

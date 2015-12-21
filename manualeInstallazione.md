@@ -54,7 +54,8 @@ cd ..
 ```
 git clone https://github.com/micheleAlberto/trackClosure.git
 cd trackClosure
-python setup.py install
+python setup.py develop
+#python setup.py develop
 cd ..
 ```
 
