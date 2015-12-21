@@ -43,4 +43,11 @@ def make_add_point(SynthPoints_functor):
         return
     return add_point_functor
 
+def test_add_point(add_point_functor):
+    def test_add(partition, track):
+        n0=len(partition.points)
+        add_point_functor(partition, track)
+        assert(len(partition.points)>=n0)
+    return test_add
+
 

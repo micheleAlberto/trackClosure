@@ -23,7 +23,7 @@ def hard_merge(p, q):
         if not v.key() in inserted:
             inserted.add(v.key())
             PuQ.add_view(v)
-    return PuQ
+    return [PuQ]
 
 
 def informed_merge(vr, p, q, radius=4.):

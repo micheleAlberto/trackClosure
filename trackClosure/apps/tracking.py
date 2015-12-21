@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 from IPython import embed
 
@@ -8,6 +9,9 @@ from ..src.closure.point import point as Track
 from ..src.closure.view import view as View
 from ..src.geometry.epipolarGeometry import EpipolarGeometry
 from ..src.fromOpenMVG.wrapper import OpenMVG
+from ..src.roamfree.roamfreeIO import write_rf_tracks # (image_names,tracks,filename)
+from ..src.roamfree.roamfreeIO import  write_rf_viewTimestamp # (image_names,filename)
+from ..src.roamfree.roamfreeIO import  write_rf_view_stats # (self,tracks,filename='views.csv')
 
 def n_connected_components(part,n):
     return [p.id for p in part.points.values() if (len(p.views)==n)]
@@ -16,48 +20,79 @@ def max_connected_components(part):
     return max(len(p.views) for p in part.points.values() )
 
 omvg=OpenMVG()
-omvg.set_image_dir(sys.argv[1])
-omvg.set_feature_dir("./featDir")
+omvg.set_feature_dir("data")
+omvg.set_image_dir("nave")
+omvg.loadImageMap()
+
 matches=omvg.getMatches()
+print 'matches read from openMVG'
 epg=EpipolarGeometry()
 for ij in matches:
     pt_i=[]
     pt_j=[]
+    print ij,": ",len (matches[ij])," ",
     for m in matches[ij]:
         pt_i.append(m[1][0:2])
         pt_j.append(m[3][0:2])
     pt_i=np.array(pt_i)
     pt_j=np.array(pt_j)
     epg[ij]=pt_i,pt_j
-epg.save('matches.epg')
-masterPartition=Partition()
-#put matches in , one by one
-for ij in matches:
-    matchPartition=Partition()
-    for m in matches[ij]:
-        v0=View(ij[0],m[0],m[1][0],m[1][1])
-        v1=View(ij[1],m[2],m[3][0],m[3][1])
-        mt=Track(-1,[v0,v1])
-        #masterPartition.robust_add_point(p, epg.F, radius=4.0)
-        masterPartition.add_point(mt)
+    print "F"
+epg.save("data/matches.epg")
 
-save_tracks(masterPartition,'cc.pk')
-max_connection=max_connected_components(masterPartition)
+
+from ..src.functionalClosure.mergeF import make_merge_with_validation #(radius, gEpG)
+from ..src.functionalClosure.mergeF import hard_merge # (p, q)
+#from ..src.functionalClosure.mergeF import make_merge_interactive 
+# (merge_functor, outcome_filter,oracle_partition, gEpG, outcome_functor=None)
+from ..src.functionalClosure.synthF import make_synthPoints # (merge_points_functor)
+from ..src.functionalClosure.addPointF import make_add_point # (SynthPoints_functor)
+from ..src.functionalClosure.closureF import make_closure # (add_pt_functor)
+
+def make_my_addpoint():
+    synth = make_synthPoints(hard_merge)
+    add_point = make_add_point(synth)
+    return add_point
+
+def make_smart_add_point(gEpG,radius):
+    merge = make_merge_with_validation(radius, gEpG)
+    synth = make_synthPoints(merge)
+    add_point = make_add_point(synth)
+    return add_point
+
+def store_partition(cc_dir,part):
+    _cc_dir='data/'+cc_dir
+    os.mkdir(cc_dir)
+    save_tracks(part,_cc_dir+'cc.pk')
+    write_rf_tracks(omvg.image_id2name,part, _cc_dir+'cc.txt')
+    write_rf_viewTimestamp(omvg.image_id2name, _cc_dir+'timestamps.txt')
+    write_rf_view_stats(tracks,filename= _cc_dir+'views.txt')
+    return 
+
+def close(add_point_functor):
+    connected_compoenents=Partition()
+    for ij in matches:
+        for m in matches[ij]:
+            v0=View(ij[0],m[0],m[1][0],m[1][1])
+            v1=View(ij[1],m[2],m[3][0],m[3][1])
+            mt=Track(-1,[v0,v1])
+            add_point_functor(connected_compoenents,mt)
+    return connected_compoenents
+
+
+#add_pt=make_my_addpoint()
+#smart_add_pt=make_smart_add_point(epg,10.)
+connected_compoenents=close(make_my_addpoint())
+store_partition('cc/',connected_compoenents)
+smart_components=close(make_smart_add_point(epg,10.))
+store_partition('smc/',smart_components)
+#put matches in , one by one
+
+max_connection=max_connected_components(connected_compoenents)
 for i in range(max_connection-10,max_connection):
-    cc_ids=n_connected_components(masterPartition,i)
+    cc_ids=n_connected_components(connected_compoenents,i)
     if len(cc_ids)<50:
         print i,':',' '.join(map(str,cc_ids))
 
-"""
-17 : 140773 144177 150186 150327 151021 151150 151192 151902 152299 152497 152788 152809 152811 153128 153265 153326 153358 153362 153395 153429 153474 153495 153596 153603 153612 153613 153632 153642 153686 153689 153706 153733 153860 153882 153955 153966 153969 153980 153984 153988 153989 154019 154024 154031 154038 154041 154049 154053 154081
-19 : 149949 151173 152236 152883 153220 153361 153420 153446 153488 153950 153951 153967 153968 153971 153981 153983 154021 154026 154028 154030
-20 : 153179 153001 149375 149656 150845 150998 152110 153083 153234 153334 153347 153430 153431 153476 153906 153924 153948 153959 153965 153977 154036 154045 154076 152190 152744
-21 : 148898 150851 153047 153226 153777 153925 153932 153990 153996 154009
-22 : 153934 153949 153963 154034
 
-python BenchmarkApp.py --new benchmark.be soft_benchmark
-python BenchmarkApp.py --addcc benchmark.be matches.epg cc.pk blablaim/ featDir/  153934 153949
-153963 154034 148898 150851 153047 153226 153777 153925 153932 153990 153996 154009
 
-"""
-embed()

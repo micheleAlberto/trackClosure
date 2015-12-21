@@ -62,13 +62,16 @@ class OpenMVG:
             "-o", self._ftd,
             "-m", method] )
         pFeatures.wait()
-    def computeMatches(self,ratio=0.8):
+    def computeMatches(self,ratio=0.8,video=None):
         print ("3. Compute matches")
-        pMatches = subprocess.Popen( [
+        commands=[
             os.path.join(OPENMVG_SFM_BIN, "openMVG_main_ComputeMatches"),
             "-i", self._ftd+"/sfm_data.json",
             "-o", self._ftd,
-            "-r", str(ratio)] )
+            "-r", str(ratio)]
+        if video:
+            commands+=["-v",str(video)]
+        pMatches = subprocess.Popen( commands)
         pMatches.wait()
     def globalSfm(
             input_matches=None,
