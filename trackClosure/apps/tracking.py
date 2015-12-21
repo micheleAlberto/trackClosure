@@ -21,7 +21,7 @@ def max_connected_components(part):
 
 omvg=OpenMVG()
 omvg.set_feature_dir("data")
-omvg.set_image_dir("nave")
+omvg.set_image_dir(sys.argv[1])
 omvg.loadImageMap()
 
 matches=omvg.getMatches()

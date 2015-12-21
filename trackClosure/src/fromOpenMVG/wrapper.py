@@ -22,7 +22,7 @@ class OpenMVG:
         self._ind=""
         #computed feature and matches directory
         self._ftd=""
-        self.checkBinExist()
+        #self.checkBinExist()
         self.image_id2name=None
         self.name2image_id=None
     def checkBinExist(self):
