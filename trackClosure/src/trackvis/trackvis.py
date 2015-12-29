@@ -117,6 +117,23 @@ def visualize(track,imageBins,gEpG,save=False,show=False):
         return save_gallery(ims,save)
     return imgallery(ims,show=show)
 
+def main(argv):
+    if len(argv)<5:
+        print """
+    Track Visualization
+    how to use:
+    trackVis image_directory cc_track_file epipolar_geometry_file cc_id1 [cc_id_n]
+    es:
+    trackVis dataset data/cc.pk data/matches.epg 78493 21344 3433 7545
+    """
+    visualize(
+        argv[1], # image_dir,
+        argv[2], # cc_track_file,
+        argv[3], # epipolar_geometry_file,
+        argv[4:], # cc_ids
+            1.)  # scale
 
         
         
+if __name__ == "__main__":
+    main(sys.argv)
