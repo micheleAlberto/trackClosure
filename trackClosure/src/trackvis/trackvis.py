@@ -45,6 +45,29 @@ def imgallery(images,show=False):
         imshow(I)
     return I
 
+def im_grid(images,n,m):
+    if len(images) is not n*m:
+        return imgallery(images)
+    II=tuple([imgallery(images[n*i:n*(i+1)]) for i in range(m)])
+    I=np.vstack(II)
+    return I
+
+automatic_image_grids={
+    4:(2,2),
+    6:(3,2),
+    8:(4,2),
+    9:(3,3),
+    10:(5,2),
+    12:(4,3),
+    15:(5,3),
+    16:(4,4)}
+
+def auto_grid(images):
+    if len(images) in automatic_image_grids :
+        n,m=automatic_image_grids[len(images)]
+        return im_grid(images,n,m)
+    return imgallery(images)
+
 
     
 def save_gallery(images,filename):
@@ -61,15 +84,19 @@ def imageToColorMap(imageBins):
         i+=1
     return i2c
 
-def getIMG(i,labelColor=False):
-    if type(i)==str:
-        I=cv2.imread(i)
-    else:
-        I=i.imread()
-    img=cv2.cvtColor(I,cv2.COLOR_GRAY2BGR)
+def getIMG(i,labelColor=False,color=False,label_text=False):
+    I=cv2.imread(str(i))
+    if not color:
+        img=cv2.cvtColor(I,cv2.COLOR_GRAY2BGR)
+    else :
+        img=I
     if labelColor:
+        if not label_text:
+            txt=str(i)
+        else:
+            txt=label_text
         bottom_left=(0,len(img))
-        cv2.putText(img, str(i.index), bottom_left,cv2.FONT_HERSHEY_DUPLEX, 10, labelColor) 
+        cv2.putText(img, txt, bottom_left,cv2.FONT_HERSHEY_DUPLEX, 10, labelColor) 
     return img
 
 def filterEpG(gEpG, images):

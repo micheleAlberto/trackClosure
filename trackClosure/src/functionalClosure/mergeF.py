@@ -129,6 +129,8 @@ def make_merge_interactive(
     provide an interactive implementation of the given merge operator
     both input and output are merge functions in the form
         merge_functor:(trackA,trackB)->result_tracks
+    outcome_filter is a functor that maps the outcome of a merge to True/False
+    if outcome_filter evaluate to True an exeption will be raised 
     """
     _outcome_functor = outcome_functor if outcome_functor else lambda x: x
     get_report = make_print_operation(gEpG, oracle_partition)
