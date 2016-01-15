@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 from deprecator import deprecated
 
-def score(P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+def score(P_list, Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=None,Qe=None):
+    if not Pe:
+        Pe=[]
+    if not Qe:
+        Qe=[]
     P_inliers = {i:0 for i in P_list}
     Q_inliers = {i:0 for i in Q_list}
     P_outliers = {i:0 for i in P_list}
@@ -49,7 +53,11 @@ def score(P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[])
 
 #classe che calcola i conteggi di inlier e outlier, generali e per vista
 class ScoreBoard:
-    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=None,Qe=None):
+        if not Pe:
+            Pe=[]
+        if not Qe:
+            Qe=[]
         score(P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[])
         (self.inliers_count, 
         self.outliers_count, 
@@ -72,7 +80,11 @@ class ScoreBoard:
 
 #classe che screma iterativamente le viste ricalcolando la scorebored e eliminando iterativamente quella peggiore
 class iterativeScoreBoard:
-    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=[],Qe=[]):
+    def __init__(self,P_list,Q_list,PPQ,PPQ_inliers,PQQ,PQQ_inliers,C,C_inliers,Pe=None,Qe=None):
+        if not Pe:
+            Pe=[]
+        if not Qe:
+            Qe=[]
         self.Pe=Pe
         self.Qe=Qe
         self.P=P_list

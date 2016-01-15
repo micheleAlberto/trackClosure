@@ -3,12 +3,16 @@ from random import random
 from random import shuffle
 from copy import deepcopy
 from itertools import combinations, permutations
-
+import numpy as np
 from ...closure.transclosure import transitiveclosure as Partition
 from ...closure.transclosure import save_tracks
 from ...closure.point import point as Track
 from ...closure.view import view as View
 from ...fromOpenMVG.wrapper import OpenMVG
+from ...geometry.epipolarGeometry import EpipolarGeometry
+from ...benchmark.benchmark import Benchmark
+from ...benchmark.benchmark import save_benchmark
+from ...benchmark.benchmark import load_benchmark
 from PartitionOutcome import ConnectedComponentTester
 
 
@@ -36,7 +40,7 @@ def all_edges(cc,gEpG):
     geometric_filter=epipolarFilter(gEpG,4.)
     return (
         (va,vb)
-        for va,vb in combinations(cc.allViews,2)
+        for va,vb in combinations(cc.allViews(),2)
         if geometric_filter(va,vb)
         )
 
@@ -47,7 +51,7 @@ def partitions_from_edges(list_of_pairs):
     pv=[]
     for (va,vb) in list_of_pairs:
         part=Partition()
-        part.add_point(Track(-1,[v0,v1]))
+        part.add_point(Track(-1,[va,vb]))
         pv.append(part)
     return pv
 
@@ -81,12 +85,16 @@ def makeEvalCC(
         gEpG,
         oracle)
     def evalCC_functor(cc):
+        print 'evaluation'
         cc_id=cc.id
         cc_edges=all_edges(cc,gEpG)
+        print 'got edges'
         base_partitions=partitions_from_edges(cc_edges)
+        print 'base_partitions'
         sampled_outcomes=[]
         #   ALL PERMUTATIONS
-        for shuffled_partition in permutation_sampling_functor(base_partitions):
+        for shuffled_partition in permutation_sampling_functor(base_partitions,cc):
+            print 's',
             partitions=deepcopy(shuffled_partition)
             while len(partitions)>1:
                 partitions=[
@@ -97,6 +105,7 @@ def makeEvalCC(
                     for i in range(len(partitions))
                     if  i % 2 ==0]
             sampled_outcomes.append(partitions[0])
+        print '\n'
         #now it' s time to judge the sampled outcomes
         test_of_sample_outcomes=[partitionTester.test(sample_partition) for sample_partition in sampled_outcomes]
         average_number_of_correct_keypoints=sum( (ts[1] for ts in test_of_sample_outcomes),0.)/len(test_of_sample_outcomes)
@@ -104,12 +113,21 @@ def makeEvalCC(
         return (average_track_correctness,average_number_of_correct_keypoints)
     return evalCC_functor
 
+def copy_suffle(arr):
+    print 'i am shuffling at len ',len(arr)
+    support=range(len(arr))
+    shuffle(support)
+    print 'shufles'
+    arr2=[arr[s] for s in support]
+    
+    return arr2
+
 permutation_sampling_functors={
     'all'           : lambda base_partitions,cc: permutations(base_partitions),
-    'oneEachView'   : lambda base_partitions,cc: (shuffle(base_partitions) for _i in cc.allViews() ),
-    'oneEachImage'  : lambda base_partitions,cc: (shuffle(base_partitions) for _i in cc.views ),
-    'ten'           : lambda base_partitions,cc: (shuffle(base_partitions) for _i in range(10) ),
-    'one'           : lambda base_partitions,cc: (shuffle(base_partitions) , )
+    'oneEachView'   : lambda base_partitions,cc: (copy_suffle(base_partitions) for _i in cc.allViews() ),
+    'oneEachImage'  : lambda base_partitions,cc: (copy_suffle(base_partitions) for _i in cc.views ),
+    'ten'           : lambda base_partitions,cc: (copy_suffle(base_partitions) for _i in range(10) ),
+    'one'           : lambda base_partitions,cc: (copy_suffle(base_partitions) , )
 }
 
 def make_closure_benchmark(closure_functor):
@@ -147,17 +165,17 @@ def make_closure_benchmark(closure_functor):
         gEpG=EpipolarGeometry.load(epipolar_geometry_file)
         print "[live] benchmark file: ",benchmark_file
         bm=load_benchmark(benchmark_file)
-        print "[live] ",bm.label , ' with {} connected components '.format(len(bm.cc.points))
+        print "[live] ",bm.label , ' with {} connected components '.format(len(bm.CC.points))
         evalCC=makeEvalCC(
             closure_functor,
             gEpG,
-            bm.cc, # benchmark_connected_component,
+            bm.CC, # benchmark_connected_component,
             bm.oracle, # oracle,
-            permutation_sampling_functors['all']) #permutation_sampling_functor)
+            permutation_sampling_functors['ten']) #permutation_sampling_functor)
         cc_performance={}
-        for cc_id in bm.cc.points:
+        for cc_id in bm.CC.points:
             print 'connected component #',cc_id
-            cc=bm.cc.points[cc_id]
+            cc=bm.CC.points[cc_id]
             cc_performance[cc_id]=evalCC(cc)
             print "{}:\t{}\t{}\t".format(cc_id,cc_performance[cc_id][0],cc_performance[cc_id][1])
         print "\tCC\tcorrectness\tcompleteness"

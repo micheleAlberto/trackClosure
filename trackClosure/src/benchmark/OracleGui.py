@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from ..closure.point import point
 from ..trackvis import trackvis as vis
-
+from ..trackAnalysis.trackAnalisys import computeMultiTrackShadows
 COLORS=vis.COLORS
 from random import choice
 oracle_gui_help_text= """
@@ -17,6 +17,19 @@ key     actions:
  l      toggle labels
  q      quit
 """
+
+def drawShadow(img,kp,img_scale,color,weak):
+    p=(int(kp[0]/img_scale), int(kp[1]/img_scale))
+    if weak:
+        cv2.circle(img,p,3,color,2)
+    else:
+        cv2.circle(img,p,5,color,2)
+
+def draw_shadows(img,S,img_scale,color=vis.RED,weak=False):
+    for p in S:
+        drawShadow(img,p,img_scale,color,weak)
+    return img
+
 
 class oracle_gui():
     def __init__(self,image_id2NameFunctor,gEpG,cc):     
@@ -33,6 +46,8 @@ class oracle_gui():
         self.keep_gui_going=True
         self.draw_epilines=True
         self.draw_label=True
+        self.draw_shadows=False
+        self.draw_weak_shadows=False
         self.active_view=None
         self.t=0.;
         self.IMGS={i:cv2.imread(image_id2NameFunctor(i)) for i in self.image_ids}
@@ -101,6 +116,12 @@ class oracle_gui():
         return self.draw()
     def quit(self):
         self.keep_gui_going=False
+    def toggle_weak_shadows(self):
+        self.draw_weak_shadows=not self.draw_weak_shadows
+        return self.draw()
+    def toggle_shadows(self):
+        self.draw_shadows=not self.draw_shadows
+        return self.draw()
     def draw(self):
         if False:
             print "image: ",self.current_image_id
@@ -151,6 +172,32 @@ class oracle_gui():
                             o_id=self.view2oracle[v_id]
                             color=self.oracle2color[o_id]
                             vis.drawEpiline(img,F,v,color=color,label=True,img_scale=self.scale)
+        if self.draw_shadows:
+            current_shadows = computeMultiTrackShadows(
+                self.current_image_id,
+                self.gEpG,
+                self.get_oracles_with_id(),
+                weak=False)
+            for o_id in current_shadows:
+                draw_shadows(
+                    img,
+                    current_shadows[o_id],
+                    self.scale,
+                    color=self.oracle2color[o_id],
+                    weak=False)
+        if self.draw_weak_shadows:
+            current_weak_shadows = computeMultiTrackShadows(
+                self.current_image_id,
+                self.gEpG,
+                self.get_oracles_with_id(),
+                weak=True)
+            for o_id in current_weak_shadows:
+                draw_shadows(
+                    img,
+                    current_weak_shadows[o_id],
+                    self.scale,
+                    color=self.oracle2color[o_id],
+                    weak=True)
         self.cached=img
         return img
     def draw_active(self,img):
@@ -173,6 +220,8 @@ class oracle_gui():
         toggle_label=1048684%256 #l
         toggle_epilines=1048677%256 #e
         quit_key= 1048689%256 #q
+        toggle_shadow_weak=ord('z')
+        toggle_shadow_strict=ord('x')
         key=None
         mouse_handler=self.get_mouse_event_handler()
         cv2.namedWindow(self.windowName)
@@ -206,6 +255,10 @@ class oracle_gui():
                 base_image=self.toggle_labels()
             elif key==toggle_epilines:
                 base_image=self.toggle_epilines()
+            elif key==toggle_shadow_strict:
+                base_image=self.toggle_shadows()
+            elif key==toggle_shadow_weak: 
+                base_image=self.toggle_weak_shadows()
             if self.redraw:
                 base_image=self.draw()
                 self.redraw=False
@@ -219,6 +272,18 @@ class oracle_gui():
                     if v.id_keypoint==v_id[1]:
                         vs.append(v)
             O=point(0,vs)
+            list_of_oracle_tracks.append(O)
+        return list_of_oracle_tracks
+    def get_oracles_with_id(self):
+        list_of_oracle_tracks=[]
+        for o_id in self.oracles:
+            v_ids=( v_id for v_id in self.view2oracle if self.view2oracle[v_id]==o_id)
+            vs=[]
+            for v_id in v_ids:
+                for v in self.cc.views[v_id[0]]:
+                    if v.id_keypoint==v_id[1]:
+                        vs.append(v)
+            O=point(o_id,vs)
             list_of_oracle_tracks.append(O)
         return list_of_oracle_tracks
     def get_mouse_event_handler(self):

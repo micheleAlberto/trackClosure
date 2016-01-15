@@ -133,12 +133,13 @@ def TEST_CC(
         R):
     from ..src.functionalClosure.benchmarkClosureF import benchmark_test   
     gEpG=EpipolarGeometry.load(epipolar_geometry_file)
+    bm=load_benchmark(benchmark_file)
     bt=benchmark_test(gEpG,R)
     bt(     benchmark_file,
             epipolar_geometry_file,
             image_dir,
             omvg_dir)
-    bm=load_benchmark(benchmark_file)
+
     
 def __ADD_CC_T(
         benchmark_file,

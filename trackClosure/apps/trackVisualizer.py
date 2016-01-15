@@ -20,6 +20,7 @@ from ..src.trackvis.cvkeys import (
     pag_up_key, pag_down_key,
     e_key, s_key, t_key,q_key)
 from ..src.trackvis.cvkeys import get_key
+from ..src.trackAnalysis.trackAnalisys import computeShadows, computeWeakShadows
 from time import clock
 
 quit_key= q_key
@@ -142,6 +143,18 @@ def draw_epilines(IM, im, cc, gEpG,scale):
                 vis.drawEpiline(IM,F,v,color=vis.GREEN,img_scale=scale)
     return IM
 
+def drawShadow(img,kp,img_scale,weak):
+    p=(int(kp[0]/img_scale), int(kp[1]/img_scale))
+    if weak:
+        cv2.circle(img,p,3,vis.YELLOW,2)
+    else:
+        cv2.circle(img,p,3,vis.RED,2)
+
+def draw_shadows(ii,im_id,S,img_scale,weak=False):
+    for p in S:
+        drawShadow(ii,p,img_scale,weak)
+    return ii
+
 def find_right_text_scale(im_id,w,h,t):
     def stop_condition(s):
         tsize=cv2.getTextSize(str(im_id), cv2.FONT_HERSHEY_SIMPLEX, s, t)
@@ -175,12 +188,16 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
     """
     should_draw_epilines=False
     should_draw_text=False
+    should_draw_shadows=False
+    should_draw_weak_shadows=False
     my_scale=scale
     num_images=3
     redraw = True
     save= False
     quitting=False
     image_indexes = sorted(cc.views)
+    shadows=computeShadows(gEpG,cc)
+    weak_shadows=computeWeakShadows(gEpG,cc)
     def _draw(im_id):
         _i=vis.getIMG(image_id2name[im_id],color=True)
         native_image_height,native_image_width,=_i.shape[0:2]
@@ -191,6 +208,10 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
             cv2.putText(ii, str(im_id), (0,img_size[1]-10),cv2.FONT_HERSHEY_SIMPLEX, 1, vis.RED,3) 
         if should_draw_epilines:
             ii=draw_epilines(ii, im_id, cc, gEpG, my_scale)
+        if should_draw_shadows:
+            ii=draw_shadows(ii,im_id,shadows[im_id],my_scale)
+        if should_draw_weak_shadows:
+            ii=draw_shadows(ii,im_id,weak_shadows[im_id],my_scale,weak=True) 
         ii=draw_kps(ii, cc.views[im_id],my_scale)
         #print 'image #{} : {}'.format(im_id,image_id2name[im_id])
         return ii
@@ -216,6 +237,12 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
             redraw=True
         elif key is ord('t'):
             should_draw_text= not should_draw_text
+            redraw=True
+        elif key is ord('x'):
+            should_draw_shadows= not should_draw_shadows
+            redraw=True
+        elif key is ord('z'):
+            should_draw_weak_shadows= not should_draw_weak_shadows
             redraw=True
         elif key is ord('e'):
             should_draw_epilines= not should_draw_epilines

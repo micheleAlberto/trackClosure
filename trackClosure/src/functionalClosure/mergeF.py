@@ -48,9 +48,11 @@ def informed_merge(vr, p, q, radius=4.):
                 if (dist < radius) and not key in inserted:
                     inserted.add(v.key())
                     PuQ.add_view(v)
+    """
     if not PuQ.not_empty():
         print ('[informed_merge] empty point from merge')
         #ipdb.set_trace()
+    """
     return PuQ
 
 
