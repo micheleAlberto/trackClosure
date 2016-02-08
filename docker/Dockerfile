@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y \
   python-opencv \
   python-matplotlib \
   python-pandas 
-RUN pip install ipython ipdb seaborn scipy tqdm
+RUN pip install ipython ipdb seaborn scipy tqdm pick
 
 # Clone the openvMVG repo 
 RUN cd /opt  && \

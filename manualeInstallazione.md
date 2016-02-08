@@ -27,7 +27,7 @@ apt-get update && apt-get install -y \
 ```
 #installare utilità python 
 ```
-pip install ipython ipdb seaborn scipy sklearn tqdm
+pip install ipython ipdb seaborn scipy sklearn tqdm pick
 ```
 #installare openMVG
 In questo esempio openMvg viene installato in /opt

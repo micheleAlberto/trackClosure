@@ -54,20 +54,26 @@ class OpenMVG:
         self._ftd=feature_dir
         if not os.path.exists(self._ftd):
             os.mkdir(self._ftd)
-    def intrinsicsAnalysis(self):
+    def intrinsicsAnalysis(self,sensor_db=None,focal=None):
         print ("1. Intrinsics analysis")
-        camera_file_params = os.path.join(self._cal, "cameraGenerated.txt")
-        pIntrisics = subprocess.Popen([
+        commands=[
             os.path.join(self._bin, "openMVG_main_SfMInit_ImageListing"),
             "-g", "0",
-            "-f", "1.4",
             "-i", self._ind,
-            "-o", self._ftd])
-            #"-d", camera_file_params])
+            "-o", self._ftd]
+        if not focal is None:
+            commands+=['-f',str(float(focal))]
+        if not sensor_db is None:
+            commands+=['-d',str(sensor_db)]
+        pIntrisics = subprocess.Popen(commands)
         pIntrisics.wait()
         self.loadImageMap()   
         return
     def computeFeatures(self,method="SIFT",preset=None):
+        """
+        preset in ["NORMAL","HIGH","ULTRA"]
+        method in ["SIFT","AKAZE_FLOAT","AKAZE_MLDB"]
+        """
         assert(method in KEYPOINT_METHODS)
         print ("2. Compute features")
         commands=[
@@ -81,6 +87,10 @@ class OpenMVG:
         pFeatures = subprocess.Popen(commands)
         pFeatures.wait()
     def computeMatches(self,ratio=0.8,video=None):
+        """
+        ratio : outlier rejectin ratio
+        video : if defined perform matching just on a window of video width
+        """
         print ("3. Compute matches")
         commands=[
             os.path.join(OPENMVG_SFM_BIN, "openMVG_main_ComputeMatches"),
