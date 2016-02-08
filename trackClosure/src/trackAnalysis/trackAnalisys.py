@@ -102,6 +102,10 @@ def computeShadows(gEpG,track):
     return shadows_on
 
 def computeMultiTrackShadows(I,gEpG,tracks,weak=False):
+    """
+    compute shadow points from many tracks on a single image
+    return a distionary indexed by track id
+    """
     shadows_of={}
     for t in tracks:
         if len(t.views)>2:

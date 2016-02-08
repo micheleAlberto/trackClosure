@@ -43,6 +43,18 @@ def make_add_point(SynthPoints_functor):
         return
     return add_point_functor
 
+def make_quick_add_point():
+    """
+    can not handle collisions between tracks
+    if there is a collision is going to raise an exception
+    """
+    def add_point_functor(partition, track):
+        matching_tracks = partition.viewGroupQuery(track.views)
+        assert (len(matching_tracks) == 0)
+        partition.newPoint(track.allViews())
+        return
+    return add_point_functor
+
 def test_add_point(add_point_functor):
     def test_add(partition, track):
         n0=len(partition.points)

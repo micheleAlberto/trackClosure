@@ -21,7 +21,7 @@ def write_rf_viewTimestamp(image_names,filename):
         for i in sorted(I2TS.keys()):
             fp.write("{},{}\n".format(i,I2TS[i]))
 
-def write_rf_view_stats(tracks,filename='views.csv'):
+def write_rf_view_stats(tracks,image_names,filename='views.csv'):
     with open(filename,'w') as fp:
         I2TS={im_id:imageNameToTimestamp(I) for im_id,I in image_names.iteritems()}
         for I in tracks.views:

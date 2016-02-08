@@ -64,10 +64,12 @@ def close(add_point_functor):
 
 
 def main(argv):
-    assert(len(argv)>=5)
+    assert(len(argv)==3 )
+    datadir=sys.argv[1]
+    image_dir=sys.argv[2]
     omvg=OpenMVG()
-    omvg.set_feature_dir("data")
-    omvg.set_image_dir(sys.argv[1])
+    omvg.set_feature_dir(datadir)
+    omvg.set_image_dir(image_dir)
     omvg.loadImageMap()
     matches=omvg.getMatches()
     print 'matches read from openMVG'
@@ -83,12 +85,12 @@ def main(argv):
         pt_j=np.array(pt_j)
         epg[ij]=pt_i,pt_j
         print "F"
-    epg.save("data/matches.epg")
+    epg.save(datadir+"/matches.epg")
     
     def make_my_addpoint():
-    synth = make_synthPoints(hard_merge)
-    add_point = make_add_point(synth)
-    return add_point
+        synth = make_synthPoints(hard_merge)
+        add_point = make_add_point(synth)
+        return add_point
     def make_smart_add_point(gEpG,radius):
         merge = make_merge_with_validation(radius, gEpG)
         synth = make_synthPoints(merge)
@@ -96,12 +98,12 @@ def main(argv):
         return add_point
 
     def store_partition(cc_dir,part):
-        _cc_dir='data/'+cc_dir
+        _cc_dir=datadir+'/'+cc_dir
         os.mkdir(_cc_dir)
         save_tracks(part,_cc_dir+'cc.pk')
         write_rf_tracks(omvg.image_id2name,part, _cc_dir+'cc.txt')
         write_rf_viewTimestamp(omvg.image_id2name, _cc_dir+'timestamps.txt')
-        write_rf_view_stats(tracks,filename= _cc_dir+'views.txt')
+        write_rf_view_stats(part,omvg.image_id2name,filename= _cc_dir+'views.txt')
         return 
 
     def close(add_point_functor):

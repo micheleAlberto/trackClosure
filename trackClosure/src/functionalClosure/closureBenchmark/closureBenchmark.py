@@ -36,8 +36,8 @@ def edge_sampling(cc,gEpG,p):
     for pair_of_views in all_edges(cc,gEpG)
     if random()<p)
 
-def all_edges(cc,gEpG):
-    geometric_filter=epipolarFilter(gEpG,4.)
+def all_edges(cc,gEpG,r=4.):
+    geometric_filter=epipolarFilter(gEpG,r)
     return (
         (va,vb)
         for va,vb in combinations(cc.allViews(),2)
@@ -183,3 +183,8 @@ def make_closure_benchmark(closure_functor):
             print "{}:\t{}\t{}\t".format(cc_id,cc_performance[cc_id][0],cc_performance[cc_id][1])
         return cc_performance
     return live_be_cmd
+
+
+
+
+

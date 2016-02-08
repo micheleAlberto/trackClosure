@@ -1,0 +1,16 @@
+package closure;
+message Partition {
+    message Track {
+        message View {
+            required int32 image = 1;
+            required int32 keypoint = 2;
+            required float u = 3;
+            required float v = 4;
+          }
+      repeated View views = 1;
+    }
+    repeated Track tracks = 1;
+}
+
+
+

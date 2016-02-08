@@ -22,7 +22,10 @@ from ..src.trackvis.cvkeys import (
 from ..src.trackvis.cvkeys import get_key
 from ..src.trackAnalysis.trackAnalisys import computeShadows, computeWeakShadows
 from time import clock
-
+from ..src.functionalClosure.refineF import make_refine_connected_component # (gEpG,radius)
+# from ..src.trackAnalysis.trackGreedyDecomposition import make_track_greedy_decomposition # (gEpG,radius,first_improvement):
+from ..src.trackAnalysis.greedyDecomposition.decomposition import make_track_greedy_decomposition # (gEpG,radius):
+from ..src.trackvis.multi import multiTrackDrawing #(tracks,gEpG,colors,scale)
 quit_key= q_key
 scale_up_key=pag_up_key
 scale_down_key=pag_down_key
@@ -71,6 +74,7 @@ def VISUALIZE(
 
 def VISUALIZE_K(
         image_dir,
+        omvg_dir,
         cc_track_file,
         epipolar_geometry_file,
         k,
@@ -95,7 +99,7 @@ def VISUALIZE_K(
     c0 = clock()
     omvg=OpenMVG()
     omvg.set_image_dir(image_dir)
-    omvg.set_feature_dir("data")
+    omvg.set_feature_dir(omvg_dir)
     image_id2name,name2image_id = omvg.loadImageMap()
     c_omvg=clock()
     print 'openmvg : OK [{}]'.format(c_omvg-c0)
@@ -128,7 +132,7 @@ def draw_kps(IM, V,scale):
     #draw all keypoints with color ORACLE2COLOR[VIEW2ORACLE[VIEW]]
     for v in V:
         v_id = (v.id_image,v.id_keypoint)
-        color = vis.BLUE
+        color = (0,0,0)
         vis.drawView(IM,v,color=color,img_scale=scale)
     return IM
 
@@ -183,13 +187,36 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
     e : toggle epilines
     t : toggle image label
     l : toggle labels
+    
+    c : toggle connected component
+    x : toggle strict shadows
+    z : toggle weak shadows
+    
+    r : refine tracks
+
+    q : toggle refined tracks keypoints
+    w : toggle refined tracks centroids
+    e : toggle refined tracks shadows
+
     page-up,page-down: scale images up or down
     s : save image; the file will be named after the connected components id
     """
+    refiner=make_track_greedy_decomposition(gEpG,260.)
+    refined_tracks=refiner(cc)
+    mtd=multiTrackDrawing(
+        refined_tracks,
+        gEpG,
+        vis.COLORS,
+        scale)
     should_draw_epilines=False
     should_draw_text=False
     should_draw_shadows=False
     should_draw_weak_shadows=False
+    should_draw_cc=False
+    should_draw_track_keypoints = False
+    should_draw_track_centroids = False
+    should_draw_track_shadows = False
+    should_draw_track_epilines = False
     my_scale=scale
     num_images=3
     redraw = True
@@ -211,8 +238,17 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
         if should_draw_shadows:
             ii=draw_shadows(ii,im_id,shadows[im_id],my_scale)
         if should_draw_weak_shadows:
-            ii=draw_shadows(ii,im_id,weak_shadows[im_id],my_scale,weak=True) 
-        ii=draw_kps(ii, cc.views[im_id],my_scale)
+            ii=draw_shadows(ii,im_id,weak_shadows[im_id],my_scale,weak=True)
+        if should_draw_track_keypoints:
+            mtd.draw_keypoints(im_id,ii)
+        if should_draw_track_shadows:
+            mtd.draw_shadows(im_id,ii)
+        if should_draw_track_centroids:
+            mtd.draw_centroids(im_id,ii)
+        if should_draw_track_epilines:
+            mtd.draw_epilines(im_id,ii)
+        if should_draw_cc:
+            ii=draw_kps(ii, cc.views[im_id],my_scale)
         #print 'image #{} : {}'.format(im_id,image_id2name[im_id])
         return ii
     cv2.namedWindow(str(cc.id))
@@ -231,9 +267,11 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
             pass
         elif key in [scale_up_key, ord('+')]:
             my_scale=my_scale*1.1
+            mtd.set_scale(my_scale)
             redraw=True
         elif key in [scale_down_key, ord('-')]:
             my_scale=my_scale/1.1
+            mtd.set_scale(my_scale)
             redraw=True
         elif key is ord('t'):
             should_draw_text= not should_draw_text
@@ -247,9 +285,32 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
         elif key is ord('e'):
             should_draw_epilines= not should_draw_epilines
             redraw=True
+        elif key is ord('w'):
+            should_draw_track_epilines = not should_draw_track_epilines
+            redraw=True
+        elif key is ord('c'):
+            should_draw_cc = not should_draw_cc
+            redraw=True
+        elif key is ord('v'):
+            should_draw_track_keypoints = not should_draw_track_keypoints
+            redraw=True
+        elif key is ord('b'):
+            should_draw_track_centroids = not should_draw_track_centroids
+            redraw=True
+        elif key is ord('n'):
+            should_draw_track_shadows = not should_draw_track_shadows
+            redraw=True
         elif key is ord('s'):
             redraw=True
             save=True
+        elif key is ord('r'):
+            refined_tracks=refiner(cc)
+            mtd=multiTrackDrawing(
+                refined_tracks,
+                gEpG,
+                vis.COLORS,
+                my_scale)
+            redraw = True
         elif key is right_key:
             image_indexes = shift_right(image_indexes)
             redraw = True
