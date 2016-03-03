@@ -24,6 +24,11 @@ def pick_describer():
 
 def pick_outlier_rejection():
     options=map(str,[0.95,0.9,0.8,0.7,0.6,0.5])
+    text="""
+Outlier rejection ratio:
+maximum ratio between the matching distance of the first and second candidates
+if their ratio is higher the match is discarded to avoid ambiguities
+"""
     option, index = pick(options,"outlier rejection ratio")
     return float(option)
 

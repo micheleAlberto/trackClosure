@@ -1,5 +1,5 @@
 
-from problem_structure import make_structure 
+from problem_structure import make_structure_factory
 from problem_structure import build_tracks
 #from problem_structure import make_structure_sorted_by_factor as make_structure
 from init_track import init_track_min_factor as init_track
@@ -8,7 +8,7 @@ from keypoint_selection import select_admissible_keypoint_picky
 from keypoint_selection import select_best_admissible_keypoint, select_close_admissible_keypoint
 import numpy as np
 from itertools import combinations
-
+from trackSplit import safe_decomposition
 picky_kp_select=(lambda cliques,
                         factors,
                         kps2cliques,
@@ -33,11 +33,12 @@ keypoint_selectors = [
     select_close_admissible_keypoint,
     select_admissible_keypoint_picky]     
           
-def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2):
+def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2,cosine_threshold=0.999):
     if type(keypoint_selector)==int:
         kp_functor=keypoint_selectors[keypoint_selector]
     else:
         kp_functor=keypoint_selector
+    make_structure = make_structure_factory(cosine_threshold)
     def track_greedy_decomposition(T):
         """
         track_greedy_decomposition(T):
@@ -50,24 +51,31 @@ def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2):
                 add track T to tracks
             return tracks        
         """
+        # Problem Structure
+        ps=make_structure(T,gEpG)
         kps,cliques,factors,kps2cliques=make_structure(T,gEpG)
         tracks={}
         track_initialization_is_possible = True
         excluded_keypoints=set()
         iteration=0
         while track_initialization_is_possible:
-                current_track=init_track(excluded_keypoints,kps,cliques,factors,kps2cliques)
+                current_track=init_track(
+                    excluded_keypoints,
+                    ps.keypoints,
+                    ps.cliques,
+                    ps.distances,
+                    ps.kpsToCliques)
                 if not len(current_track)<2:
                     support_expansion_is_possible=True        
                     while support_expansion_is_possible:
                         kp=kp_functor(
-                            cliques,
-                            factors,
-                            kps2cliques,
+                            ps.cliques,
+                            ps.distances,
+                            ps.kpsToCliques,
                             current_track,
                             excluded_keypoints,
                             radius,
-                            len(kps))
+                            len(ps.keypoints))
                         if kp == -1:
                             support_expansion_is_possible = False
                         else:
@@ -77,15 +85,27 @@ def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2):
                 excluded_keypoints.update(current_track)
                 tracks[iteration]=list(current_track)
                 iteration+=1
-        return build_tracks(T,tracks,kps)
-    return track_greedy_decomposition
+        return build_tracks(T,tracks,ps.keypoints)
+    def safe_track_greedy_decomposition(T):
+        mem_safe_tracks=safe_decomposition([T])
+        if len(mem_safe_tracks)==1:
+            return track_greedy_decomposition(T)
+        else:
+            print len(mem_safe_tracks),' splitted connected components' 
+            tracks=[]
+            for t in mem_safe_tracks:
+                tracks+=track_greedy_decomposition(t)
+            return tracks
+    return safe_track_greedy_decomposition
 
 
 class decomposition_tuner:
     def __init__(self,gEpG,T):
         self.gEpG=gEpG
         self.T=T
-        structure=make_structure(T,gEpG)
+        make_structure = make_structure_factory(1.)
+        ps=make_structure(T,gEpG)
+        self.ps=make_structure(T,gEpG)
         self.kps,self.cliques,self.factors,self.kps2cliques=structure
     def merging_support(self,t1,t2):
         #print 'mergin cost ',t1,' ', t2
@@ -108,28 +128,30 @@ class decomposition_tuner:
                 tracks[tid2])>min_support)
         for tid1,tid2 in pair_gen:
             return tid1,tid2
-    def build_tracks(self,tracks):
-        return build_tracks(self.T,tracks,self.kps)
     def solve_for(self,radius,selector_method=0):
+        ps=filter_problem_structure(self.ps,cosine_threshold)
         tracks={}
         track_initialization_is_possible = True
         excluded_keypoints=set()
         iteration=0
         while track_initialization_is_possible:
-                current_track=init_track(excluded_keypoints,self.kps,self.cliques,self.factors,self.kps2cliques)
-                #print '[track decomposition] track {} = {}'.format(
-                #      iteration,current_track)
+                current_track=init_track(
+                    excluded_keypoints,
+                    ps.keypoints,
+                    ps.cliques,
+                    ps.distances,
+                    ps.kpsToCliques)
                 if not len(current_track)<2:
                     support_expansion_is_possible=True        
                     while support_expansion_is_possible:
                         kp=keypoint_selectors[selector_method](
-                            self.cliques,
-                            self.factors,
-                            self.kps2cliques,
+                            ps.cliques,
+                            ps.distances,
+                            ps.kpsToCliques,
                             current_track,
                             excluded_keypoints,
                             radius,
-                            len(self.kps))
+                            len(ps.keypoints))
                         if kp == -1:
                             support_expansion_is_possible = False
                         else:
@@ -142,6 +164,6 @@ class decomposition_tuner:
                 tracks[iteration]=list(current_track)
                 iteration+=1
         #print '[track decomposition] orphans:',[i for i in range(len(self.kps)) if not i in excluded_keypoints]
-        return self.build_tracks(tracks)
+        return build_tracks(self.T,tracks,ps.keypoints)
 
         

@@ -201,7 +201,7 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
     page-up,page-down: scale images up or down
     s : save image; the file will be named after the connected components id
     """
-    refiner=make_track_greedy_decomposition(gEpG,260.)
+    refiner=make_track_greedy_decomposition(gEpG,500,2)
     refined_tracks=refiner(cc)
     mtd=multiTrackDrawing(
         refined_tracks,

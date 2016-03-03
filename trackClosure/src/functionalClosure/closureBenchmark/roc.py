@@ -20,15 +20,15 @@ import cv2
 from ...trackAnalysis.greedyDecomposition.decomposition import make_track_greedy_decomposition, decomposition_tuner
 from collections import namedtuple
 from random import choice
-OP_fields=['method','cc','R','TP','FN','FP','TN']
+OP_fields=['method','cc','MAX_COS','R','TP','FN','FP','TN']
 OP = namedtuple('operating_point',OP_fields)
 def make_receiver_operating_point_csv(name):
     f=open(name+'.csv','w')
     f.write( ','.join(OP_fields) +'\n')
     return f
 
-def write_OP(method,cc_id,R,roc,f):
-    op = OP(method,cc_id,R,roc.TP,roc.FN,roc.FP,roc.TN)
+def write_OP(method,cc_id,MAX_COS,R,roc,f):
+    op = OP(method,cc_id,MAX_COS,R,roc.TP,roc.FN,roc.FP,roc.TN)
     f.write( ', '.join(map(str,op)) +'\n')
 
 def omvg_refinement(cc):
@@ -36,6 +36,7 @@ def omvg_refinement(cc):
     return t
 
 methods={0:'first',1:'best',2:'short'}
+"""
 def roc_of_a_benchmark(
             benchmark_file,
             epipolar_geometry_file,
@@ -59,15 +60,65 @@ def roc_of_a_benchmark(
             for R in np.logspace(1.5,3.,500):
                 for method in methods:
                     print "Testing CC#",cc_id," with R ",R, ' and method ',method
-                    refined_tracks = refiner_tuner.solve_for(R,method)
+                    refined_tracks = refiner_tuner.solve_for(R,1.,method)
                     part=Partition()
                     for track in refined_tracks:
                         add_point(part,track)
                     print "Evaluation"
                     roc_result=roc.testPartition(part)
-                    write_OP(methods[method],cc_id,R,roc_result,f)
+                    write_OP(methods[method],cc_id,1.,R,roc_result,f)
                     f.flush()
                     cv2.imwrite('cc1/{}R{:05.0f}m{}.bmp'.format(cc_id,R,method),roc_result.IMG)
+                    total=roc_result.TP+roc_result.FP+roc_result.TN+roc_result.FN+0.0
+                    print 'TP:',roc_result.TP
+                    print 'FP:',roc_result.FP
+                    print 'TN:',roc_result.TN
+                    print 'FN:',roc_result.FN
+                    print 'accuracy:',(roc_result.TP+roc_result.TN)/(total) 
+                    print 'sensitivity:',roc_result.TP/(roc_result.TP+roc_result.FN+0.0) 
+                    print 'false positive rate:',(roc_result.FP)/(roc_result.FP+roc_result.TN+0.0) 
+                    print 'precision:',roc_result.TP/(roc_result.TP+roc_result.FP+0.0)
+            for trial in range(50):
+                part=Partition()
+                add_point(part,omvg_refinement(cc))
+                roc_result=roc.testPartition(part)
+                write_OP('omvg',cc_id,trial,roc_result,f)
+        f.close() 
+"""
+def roc_of_a_benchmark2(
+            benchmark_file,
+            epipolar_geometry_file,
+            image_dir,
+            omvg_dir):
+        omvg=OpenMVG()
+        omvg.set_image_dir(image_dir)
+        omvg.set_feature_dir(omvg_dir)
+        image_id2name,name2image_id = omvg.loadImageMap()
+        gEpG=EpipolarGeometry.load(epipolar_geometry_file)
+        print "[live] benchmark file: ",benchmark_file
+        bm=load_benchmark(benchmark_file)
+        print "[ROC] ",bm.label , ' with {} connected components '.format(len(bm.CC.points))
+        synth = make_synthPoints(hard_merge)
+        add_point = make_add_point(synth)
+        f=make_receiver_operating_point_csv('roc')
+        for cc_id in bm.CC.points:
+            cc=bm.CC.points[cc_id]
+            roc=ROC_Tester(cc,gEpG,bm.oracle)
+            refiner_tuner=decomposition_tuner(gEpG,cc)
+            for MAX_COS in 1-np.logspace(-4,-1,10):
+              for R in np.logspace(0,2,20):
+                for method in methods:
+                    print "Testing CC#",cc_id," with R ",R, ' and method ',method
+                    refined_tracks = refiner_tuner.solve_for(R,MAX_COS,method)
+                    part=Partition()
+                    for track in refined_tracks:
+                        add_point(part,track)
+                    print "Evaluation"
+                    roc_result=roc.testPartition(part)
+                    write_OP(methods[method],cc_id,MAX_COS,R,roc_result,f)
+                    f.flush()
+                    image_name='cc1/{}m{}COS{:05.0f}R{:05.0f}.bmp'.format(cc_id,method,MAX_COS,R)
+                    cv2.imwrite(image_name,roc_result.IMG)
                     total=roc_result.TP+roc_result.FP+roc_result.TN+roc_result.FN+0.0
                     print 'TP:',roc_result.TP
                     print 'FP:',roc_result.FP

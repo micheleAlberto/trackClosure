@@ -151,7 +151,7 @@ def select_close_admissible_keypoint(
     set(kp) selected_keypoints : keypoints already selected for the track
     set(kp) excluded_keypoints : keypoints already selected for another track
     float radius : the radius of the filter 
-    first_improvement = True   : flag for first improvement heuristic
+    (int) n_keypoints : the number of keypoints
        
     DEF a keypoint is available if
             it does not belong to the current track (selected keypoints)
@@ -161,14 +161,16 @@ def select_close_admissible_keypoint(
             or not relevant
         it belongs to at least one relevant admissible clique
     DEF a clique is admissible if 
-        the relevant factor is lower than radius
+        the factor associated with the clique is lower than radius
     DEF a clique is relevant if
-        two of its keypoint are in the current track (selected keypoints)
+        every keypoint in the clique except one belong to the current track
+        (selected keypoints) 
     RETURN:
     the id of an available, admissible keypoint such that the number of verified cliques is maximal
     return -1 if no such keypoint exist 
     """
-    relevant_clique=lambda c: len(selected_keypoints.intersection(cliques[c]))==2
+    def relevant_clique(c):
+        return len(selected_keypoints.intersection(cliques[c]))==(len(c)-1)
     def other_keypoint_in_relevant_clique(c_ind):
         for kp in cliques[c_ind]:
             if not kp in selected_keypoints:
@@ -183,7 +185,7 @@ def select_close_admissible_keypoint(
                     return 0 # one clique is wrong
         return correct_cliques
     def good_available_keypoints():
-        #cliques that are eligible to be satisfied
+        #cliques that are eligible to be satisfied by adding a keypoint
         c_eligible=set([ 
             c_ind 
             for kp_sel in selected_keypoints
@@ -245,7 +247,7 @@ def select_admissible_keypoint_picky(
         correct_cliques = 0
         for c_ind in kps2cliques[kp]:
             if relevant_clique(c_ind):
-                if factors[c_ind]<radius:
+                if factors[c_ind]<rad:
                     correct_cliques+=1
                 else:
                     return 0 # one clique is wrong

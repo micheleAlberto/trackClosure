@@ -33,7 +33,7 @@ def soft_fetch(partition,track):
 def soft_fetch_views(partition,views):
     """ 
     extract from partition identifiers of tracks that match the keypoints in the
-    list views or end up near one of those keypoint (no further than 5. pixels)
+    list views or end up near one of those keypoint (no further than 3. pixels)
     """
     track_ids=[]
     for v in views:
@@ -46,7 +46,7 @@ def soft_fetch_views(partition,views):
             else:
                 nearest_keyponint = nearest_view(v,partition)
                 if (nearest_keyponint 
-                and np.linalg.norm(v.pt(),nearest_keyponint.pt())<5.):
+                and np.linalg.norm(v.pt(),nearest_keyponint.pt())<3.):
                    #in case the keypoint is near a tagged keypoint
                    track_id=partition.views[vk[0]][nearest_keyponint.id_image]
                    track_ids.append(track_id)

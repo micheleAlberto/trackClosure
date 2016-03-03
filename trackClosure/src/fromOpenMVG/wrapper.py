@@ -138,20 +138,21 @@ class OpenMVG:
             (self._ftd+"/sfm_data.json"),
         #match file
             (self._ftd+"/matches.f.txt"))
-    def putMatches(self,partition,match_label):
+    def putMatches(self,partition,match_label,limiter=None):
         directory="{}/matches/{}".format(self._ftd,match_label)
         matches_dir_cleanup(directory)
         filename="{}/matches.f.txt".format(directory)
         print "writing matches in ",filename
-        exportPartition(partition,filename)
-    def incrementalSFM(self,match_label,partition=None):
-        if partition:
-            self.putMatches(partition,match_label)
+        exportPartition(partition,filename,limiter=None)
+    def putMatchesLimitKeypoint(self,partition,match_label,max_kp):
+        self.putMatches(partition,match_label,limiter=kpLimit(max_kp))
+    def putMatchesLimitTrack(self,partition,match_label,max_tracks):
+        self.putMatches(partition,match_label,limiter=trackLimit(max_tracks))
+    def incrementalSFM(self,output_dir):
         commands = [os.path.join(OPENMVG_SFM_BIN,"openMVG_main_IncrementalSfM")]
-        match_dir="{}/matches/{}".format(self._ftd,match_label)
         commands+=["-i",self._ftd+"/sfm_data.json"]
-        commands+=["-m",match_dir]
-        commands+=["-o",match_dir]
+        commands+=["-m",self._ftd]
+        commands+=["-o",output_dir]
         print " ".join(commands)
         pSfM = subprocess.Popen(commands)
         pSfM.wait()
