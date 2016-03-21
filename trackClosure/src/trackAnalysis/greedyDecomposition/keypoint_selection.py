@@ -170,7 +170,8 @@ def select_close_admissible_keypoint(
     return -1 if no such keypoint exist 
     """
     def relevant_clique(c):
-        return len(selected_keypoints.intersection(cliques[c]))==(len(c)-1)
+        _clique=cliques[c]
+        return len(selected_keypoints.intersection(_clique))==(len(_clique)-1)
     def other_keypoint_in_relevant_clique(c_ind):
         for kp in cliques[c_ind]:
             if not kp in selected_keypoints:

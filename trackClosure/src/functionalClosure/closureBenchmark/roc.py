@@ -85,7 +85,7 @@ def roc_of_a_benchmark(
                 write_OP('omvg',cc_id,trial,roc_result,f)
         f.close() 
 """
-def roc_of_a_benchmark2(
+def roc_of_a_benchmark(
             benchmark_file,
             epipolar_geometry_file,
             image_dir,
@@ -106,7 +106,7 @@ def roc_of_a_benchmark2(
             roc=ROC_Tester(cc,gEpG,bm.oracle)
             refiner_tuner=decomposition_tuner(gEpG,cc)
             for MAX_COS in 1-np.logspace(-4,-1,10):
-              for R in np.logspace(0,2,20):
+              for R in np.logspace(1,3,100):
                 for method in methods:
                     print "Testing CC#",cc_id," with R ",R, ' and method ',method
                     refined_tracks = refiner_tuner.solve_for(R,MAX_COS,method)
@@ -132,5 +132,5 @@ def roc_of_a_benchmark2(
                 part=Partition()
                 add_point(part,omvg_refinement(cc))
                 roc_result=roc.testPartition(part)
-                write_OP('omvg',cc_id,trial,roc_result,f)
+                write_OP('omvg',cc_id,1.,trial,roc_result,f)
         f.close() 

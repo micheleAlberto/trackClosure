@@ -1,6 +1,7 @@
 
 from problem_structure import make_structure_factory
 from problem_structure import build_tracks
+from problem_structure import filter_problem_structure
 #from problem_structure import make_structure_sorted_by_factor as make_structure
 from init_track import init_track_min_factor as init_track
 from keypoint_selection import select_first_admissible_keypoint as select_new_keypoint
@@ -53,7 +54,6 @@ def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2,cosine_thres
         """
         # Problem Structure
         ps=make_structure(T,gEpG)
-        kps,cliques,factors,kps2cliques=make_structure(T,gEpG)
         tracks={}
         track_initialization_is_possible = True
         excluded_keypoints=set()
@@ -106,7 +106,6 @@ class decomposition_tuner:
         make_structure = make_structure_factory(1.)
         ps=make_structure(T,gEpG)
         self.ps=make_structure(T,gEpG)
-        self.kps,self.cliques,self.factors,self.kps2cliques=structure
     def merging_support(self,t1,t2):
         #print 'mergin cost ',t1,' ', t2
         s1=set(t1)
@@ -116,7 +115,7 @@ class decomposition_tuner:
             m1 = len(s1.intersection(c))
             m2 = len(s2.intersection(c))
             if (m1+m2==3) and (m1<3) and (m2<3):
-              if self.factors[c_id]<1400.:
+              if self.ps.distances[c_id]<50.:
                 count+=1.
         return count
     def get_track_twin_pair(self,tracks,min_support):
@@ -128,7 +127,7 @@ class decomposition_tuner:
                 tracks[tid2])>min_support)
         for tid1,tid2 in pair_gen:
             return tid1,tid2
-    def solve_for(self,radius,selector_method=0):
+    def solve_for(self,radius,cosine_threshold,selector_method=0):
         ps=filter_problem_structure(self.ps,cosine_threshold)
         tracks={}
         track_initialization_is_possible = True

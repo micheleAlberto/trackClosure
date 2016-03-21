@@ -23,10 +23,10 @@ def filter_problem_structure(ps,cosine_threshold):
     cliques=[ps.cliques[i] for i in clique_ids]
     distances=[ps.distances[i] for i in clique_ids]
     cosines=[ps.cosines[i] for i in clique_ids]
-    kps2cliques=[[] for kp in kps]
-        for ci,c in enumerate(cliques):
-            for kp_i in c:
-                kps2cliques[kp_i].append(ci)
+    kps2cliques=[[] for kp in keypoints]
+    for ci,c in enumerate(cliques):
+        for kp_i in c:
+            kps2cliques[kp_i].append(ci)
     ps2=ProblemStructure(
             images,
             keypoints,

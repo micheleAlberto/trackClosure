@@ -4,7 +4,7 @@ from math import sin , cos
 from itertools import cycle
 from ..roamfree.trackCentroid import centroid
 from ..trackAnalysis.trackAnalisys import compactPoint, observations_weak, observations_strict, pointTransferVectorized
-from trackvis import drawEpiline # drawEpiline(img,F,v,color=(0,255,0),label=False,img_scale=1.)
+#from trackvis import drawEpiline # drawEpiline(img,F,v,color=(0,255,0),label=False,img_scale=1.)
 """
 module for multi track drawing
 given an image id, some tracks , an epipolar geometry 
@@ -121,11 +121,12 @@ class multiTrackDrawing:
     def draw_epilines(self, image_id, image):
         eps = self.get_epilines(image_id)
         for tid in eps:
-            drawEpiline(
-                image,
-                eps[tid],
-                self.colors[tid],
-                self.scale)
+            for ep in eps[tid]:
+                drawEpiline(
+                    image,
+                    ep,
+                    self.colors[tid],
+                    self.scale)
 
 
 
