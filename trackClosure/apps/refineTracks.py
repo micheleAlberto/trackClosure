@@ -16,6 +16,9 @@ from ..src.functionalClosure.addPointF import make_add_point, make_quick_add_poi
 from ..src.trackAnalysis.greedyDecomposition.decomposition import make_track_greedy_decomposition # (gEpG,radius):
 
 from tqdm import tqdm
+import json
+import time
+
 def REFINE(cc_file,epipolar_geometry_file,radius,mode,outfile):
     """
     REFINE connected components from a file using multi view epipolar geometry constraints
@@ -31,32 +34,53 @@ def REFINE(cc_file,epipolar_geometry_file,radius,mode,outfile):
     1 : Best available keypoint (L0)
     2 : Best L2 keypoint
     """
+    begin_time = time.time()
     gEpG=EpipolarGeometry.load(epipolar_geometry_file)
     CC=load_tracks(cc_file)
     P=Partition()   
     assert(mode in [0,1,2])
-    refiner=make_track_greedy_decomposition(gEpG,radius,mode)
+    refiner=make_track_greedy_decomposition(gEpG,radius,mode,0.999684)
     synth = make_synthPoints(hard_merge)
     add_point = make_add_point(synth)
     rejected = 0
     to_refine = 0
     refined= 0
     passed = 0
+    start_time = time.time()
     for cc in tqdm(CC.points.values()):
         ni=len(cc.views)
         nk=sum((len(cc.views[i]) for i in cc.views))
-        if ni==nk and ni==3:
-            add_point(P,cc)
-            passed+=1
-        elif ni>2:
+        if ni>2:
             to_refine+=1
             refined_tracks=refiner(cc)
             for r_cc in refined_tracks:
                 refined+=1
                 add_point(P,r_cc)
         else :
-            rejected+=1
+            if ni>1:
+                add_point(P,cc)
+                passed+=1
+            else:
+                rejected+=1
+    end_time=time.time()
     save_tracks(P,outfile)
+    close_time=time.time()
+    with open(outfile+'.json', 'w') as of:
+        json.dump(
+            {
+                'in':cc_file,
+                'gepg':epipolar_geometry_file,
+                'out':outfile,
+                'keypointSelect':mode,
+                'radius':radius,
+                'rejected':rejected,
+                'passed':passed,
+                'to_refine':to_refine,
+                'refined':refined,
+                'refineTime':end_time-start_time,
+                'executionTime':close_time-begin_time
+            }
+        , of)
     print 'rejected :',rejected
     print 'passed :',passed
     print 'to refine :',to_refine

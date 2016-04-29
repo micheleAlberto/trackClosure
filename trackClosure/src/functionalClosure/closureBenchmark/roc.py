@@ -105,8 +105,8 @@ def roc_of_a_benchmark(
             cc=bm.CC.points[cc_id]
             roc=ROC_Tester(cc,gEpG,bm.oracle)
             refiner_tuner=decomposition_tuner(gEpG,cc)
-            for MAX_COS in 1-np.logspace(-4,-1,10):
-              for R in np.logspace(1,3,100):
+            for MAX_COS in 1-np.logspace(-8,-1,8):
+              for R in np.logspace(1,4,80):
                 for method in methods:
                     print "Testing CC#",cc_id," with R ",R, ' and method ',method
                     refined_tracks = refiner_tuner.solve_for(R,MAX_COS,method)
@@ -117,7 +117,11 @@ def roc_of_a_benchmark(
                     roc_result=roc.testPartition(part)
                     write_OP(methods[method],cc_id,MAX_COS,R,roc_result,f)
                     f.flush()
-                    image_name='cc1/{}m{}COS{:05.0f}R{:05.0f}.bmp'.format(cc_id,method,MAX_COS,R)
+                    image_name='cc1/{}m{}COS{:05.0f}R{:05.0f}.bmp'.format(
+                        cc_id,
+                        method,
+                        float(np.degrees(np.arccos(MAX_COS))),
+                        R)
                     cv2.imwrite(image_name,roc_result.IMG)
                     total=roc_result.TP+roc_result.FP+roc_result.TN+roc_result.FN+0.0
                     print 'TP:',roc_result.TP

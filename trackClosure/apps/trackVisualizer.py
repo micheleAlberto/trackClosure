@@ -194,14 +194,14 @@ def visualize_cc(cc, gEpG, image_id2name,scale):
     
     r : refine tracks
 
-    q : toggle refined tracks keypoints
-    w : toggle refined tracks centroids
-    e : toggle refined tracks shadows
+    (v) : toggle refined tracks keypoints
+    (b) : toggle refined tracks centroids
+    (n) : toggle refined tracks shadows
 
     page-up,page-down: scale images up or down
     s : save image; the file will be named after the connected components id
     """
-    refiner=make_track_greedy_decomposition(gEpG,500,2)
+    refiner=make_track_greedy_decomposition(gEpG,300,2)
     refined_tracks=refiner(cc)
     mtd=multiTrackDrawing(
         refined_tracks,

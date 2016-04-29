@@ -129,6 +129,15 @@ def plot_track_lenght_aggregation(dfErrors,dfNodes,outfile='TrackLenghtAggregati
     sns_plot.savefig(outfile+'.png')
     aggregated_by_track_lenght.to_csv(outfile+'.csv')
 
+
+###
+
+def quantifyKeypointsViewsPerTrack(part):
+    return [
+        (len(track.allViews()),
+         len(track.views))
+        for track in part.points.values]
+    
     
 
 

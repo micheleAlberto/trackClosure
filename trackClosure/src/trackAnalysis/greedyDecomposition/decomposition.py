@@ -34,7 +34,7 @@ keypoint_selectors = [
     select_close_admissible_keypoint,
     select_admissible_keypoint_picky]     
           
-def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2,cosine_threshold=0.999):
+def make_track_greedy_decomposition(gEpG,radius,keypoint_selector=2,cosine_threshold=0.9999):
     if type(keypoint_selector)==int:
         kp_functor=keypoint_selectors[keypoint_selector]
     else:

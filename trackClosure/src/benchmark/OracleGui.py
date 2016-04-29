@@ -31,11 +31,14 @@ def draw_shadows(img,S,img_scale,color=vis.RED,weak=False):
     return img
 
 
+
 class oracle_gui():
     def __init__(self,image_id2NameFunctor,gEpG,cc):     
         self.gEpG=gEpG
         print "reading ",len(gEpG)," epipolar geometries"
         self.cc=cc
+        self.saved_id=0
+        self.get_screen=False
         self.image_ids=sorted(cc.views.keys())
         self.view2oracle={}
         self.oracles=[0]
@@ -52,7 +55,7 @@ class oracle_gui():
         self.t=0.;
         self.IMGS={i:cv2.imread(image_id2NameFunctor(i)) for i in self.image_ids}
         native_image_height,native_image_width,=self.IMGS.values()[0].shape[0:2]
-        target_width=600
+        target_width=1200
         self.scale=float(native_image_width)/target_width
         img_size=(target_width,int(native_image_height/self.scale))
         self.IMGS={i:cv2.resize(self.IMGS[i],img_size) for i in self.image_ids}
@@ -119,6 +122,8 @@ class oracle_gui():
     def toggle_weak_shadows(self):
         self.draw_weak_shadows=not self.draw_weak_shadows
         return self.draw()
+    def screen(self):
+        self.get_screen=True
     def toggle_shadows(self):
         self.draw_shadows=not self.draw_shadows
         return self.draw()
@@ -150,10 +155,10 @@ class oracle_gui():
             bottom_left=(0,len(img))
             cv2.putText(img, text, 
                 bottom_left,
-                cv2.FONT_HERSHEY_DUPLEX, 
+                cv2.FONT_HERSHEY_PLAIN, 
                 5, 
                 labelColor,
-                thickness=4,
+                thickness=3,
                 bottomLeftOrigin=False) 
         #draw epilines from the same oracle
         if self.draw_epilines:
@@ -171,7 +176,7 @@ class oracle_gui():
                             #print "epipolar line from ",v_id," with oracle ",o_id
                             o_id=self.view2oracle[v_id]
                             color=self.oracle2color[o_id]
-                            vis.drawEpiline(img,F,v,color=color,label=True,img_scale=self.scale)
+                            vis.drawEpiline(img,F,v,color=color,label=False,img_scale=self.scale)
         if self.draw_shadows:
             current_shadows = computeMultiTrackShadows(
                 self.current_image_id,
@@ -222,6 +227,7 @@ class oracle_gui():
         quit_key= 1048689%256 #q
         toggle_shadow_weak=ord('z')
         toggle_shadow_strict=ord('x')
+        screen_key=ord('p')
         key=None
         mouse_handler=self.get_mouse_event_handler()
         cv2.namedWindow(self.windowName)
@@ -234,6 +240,10 @@ class oracle_gui():
             img=np.copy(base_image)
             self.draw_active(img)
             cv2.imshow(self.windowName,img)
+            if self.get_screen:
+                cv2.imwrite('tutorial{}.png'.format(self.saved_id), img)
+                self.saved_id+=1
+                self.get_screen=False
             key=cv2.waitKey(20)%256
             if key is not -1%256 :
                 print key
@@ -259,6 +269,8 @@ class oracle_gui():
                 base_image=self.toggle_shadows()
             elif key==toggle_shadow_weak: 
                 base_image=self.toggle_weak_shadows()
+            elif key==screen_key:
+                self.screen()
             if self.redraw:
                 base_image=self.draw()
                 self.redraw=False
